@@ -26,13 +26,6 @@ jobs:
       - run: rm -rf /tmp/*
         if: matrix.os == 'ubuntu-latest'
         continue-on-error: true
-      - name: test dir
-        shell: bash
-        run: ls ${{runner.workspace}}
-      - name: Use custom jar for nucleus
-        run: "mvn install:install-file -Dfile=${{runner.workspace}}/lambda-template-transformer/custom_jars/nucleus-2.5.0-SNAPSHOT.jar -DgroupId=com.aws.greengrass -DartifactId=nucleus -Dversion=2.5.0-SNAPSHOT -Dpackaging=jar"
-      - name: use custom jar for component-common
-        run: "mvn install:install-file -Dfile=${{runner.workspace}}/lambda-template-transformer/custom_jars/component-common-2.0.0-SNAPSHOT.jar -DgroupId=com.aws.greengrass -DartifactId=component-common -Dversion=2.0.0-SNAPSHOT -Dpackaging=jar"
       - name: Build with Maven (Windows)
         env:
           AWS_REGION: us-west-2

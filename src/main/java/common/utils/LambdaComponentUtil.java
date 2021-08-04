@@ -14,7 +14,8 @@ import static common.Constants.NODEJS_LAMBDA_RUNTIME_COMMAND;
 import static common.Constants.PYTHON_LAMBDA_RUNTIME_COMMAND;
 
 public class LambdaComponentUtil {
-    public static Map<LambdaRuntime, List<String>> RUNTIME_TO_EXEC_ARG_MAPPING = new HashMap<LambdaRuntime, List<String>>() {{
+    public static final Map<LambdaRuntime, List<String>> RUNTIME_TO_EXEC_ARG_MAPPING = new HashMap<LambdaRuntime,
+            List<String>>() {{
         put(LambdaRuntime.Python27, new LinkedList<>(
                 Arrays.asList("python2.7", "-u", PYTHON_LAMBDA_RUNTIME_COMMAND, LAMBDA_EXEC_ARGS_HANDLER)));
         put(LambdaRuntime.Python37, new LinkedList<>(Arrays.asList("python3.7", "-u", PYTHON_LAMBDA_RUNTIME_COMMAND,

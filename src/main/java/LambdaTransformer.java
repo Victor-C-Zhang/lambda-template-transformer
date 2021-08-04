@@ -27,7 +27,6 @@ import common.models.LambdaRuntime;
 import common.models.LambdaTemplateParams;
 import common.models.LambdaVolumeMount;
 import common.models.LifecycleType;
-import common.utils.GenerateTemplateSchemaFromDefaults;
 import common.utils.LambdaComponentUtil;
 import lombok.Data;
 
@@ -64,6 +63,7 @@ public class LambdaTransformer extends RecipeTransformer {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    @SuppressWarnings("PMD.AvoidDuplicateLiterals")
     @Override
     protected String initTemplateSchema() {
         return "lambdaArn:\n" + "  type: \"string\"\n" + "  required: true\n" + "lambdaRuntime:\n"
@@ -103,6 +103,26 @@ public class LambdaTransformer extends RecipeTransformer {
             throw new RecipeTransformerException("At least one platform is expected to be set by caller");
         }
 
+        List<String> execArgs = getExecArgsSpecificToLambdaRuntime(lambdaParameters.getLambdaHandler(),
+                lambdaParameters.getLambdaRuntime());
+
+        if(lambdaParameters.getExecArgs() != null) {
+            execArgs.addAll(lambdaParameters.getExecArgs());
+        }
+
+        // the same lifecycle exists per platform
+        Map<String, Object> lifecycleMap;
+        try {
+            lifecycleMap = getLifecycleFromLambda(
+                    lambdaParameters.getLambdaArn(),
+                    lambdaParameters.getLambdaHandler(),
+                    lambdaParameters.getLambdaRuntime(),
+                    execArgs
+            );
+        } catch (JsonProcessingException e) {
+            throw new RecipeTransformerException(e);
+        }
+
         ComponentConfiguration configuration = createConfigurationFromParameters(lambdaParameters);
 
         //
@@ -123,26 +143,6 @@ public class LambdaTransformer extends RecipeTransformer {
 
         Map<String, DependencyProperties> dependenciesMap = lambdaParameters.getComponentDependencies();
         addLambdaDependencies(dependenciesMap);
-
-        List<String> execArgs = getExecArgsSpecificToLambdaRuntime(lambdaParameters.getLambdaHandler(),
-                lambdaParameters.getLambdaRuntime());
-
-        if(lambdaParameters.getExecArgs() != null) {
-            execArgs.addAll(lambdaParameters.getExecArgs());
-        }
-
-        // the same lifecycle exists per platform
-        Map<String, Object> lifecycleMap;
-        try {
-            lifecycleMap = getLifecycleFromLambda(
-                    lambdaParameters.getLambdaArn(),
-                    lambdaParameters.getLambdaHandler(),
-                    lambdaParameters.getLambdaRuntime(),
-                    execArgs
-            );
-        } catch (JsonProcessingException e) {
-            throw new RecipeTransformerException(e);
-        }
 
         List<PlatformSpecificManifest> manifests = perPlatform
                 .stream()

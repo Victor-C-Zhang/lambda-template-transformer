@@ -1,0 +1,100 @@
+---
+recipeFormatVersion: '2020-01-25'
+componentName: LambdaTemplate
+componentType: aws.greengrass.template
+componentVersion: '1.0.0'
+componentDescription: Lambda template for local deployment
+componentPublisher: AWS Greengrass
+ComponentConfiguration:
+  DefaultConfiguration:
+    parameters:
+      maxIdleTimeInSeconds: 60
+      lambdaEnvironmentVariables: {}
+      pinned: true
+      lambdaArgs: []
+      maxInstancesCount: 100
+      pubsubTopics: []
+      containerParams:
+        memorySizeInKB: 16384
+        mountROSysfs: true
+        volumes: []
+        devices: []
+      timeoutInSeconds: 3
+      platforms:
+        - os: "*"
+      componentDependencies: {}
+      maxQueueSize: 1000
+      statusTimeoutInSeconds: 60
+      inputPayloadEncodingType: json
+      containerMode: GreengrassContainer
+    parameterSchema:
+      lambdaArn:
+        type: "string"
+        required: true
+      lambdaRuntime:
+        type: "string"
+        required: true
+      lambdaHandler:
+        type: "string"
+        required: true
+      maxIdleTimeInSeconds:
+        type: "number"
+        required: false
+        defaultValue: 60
+      lambdaEnvironmentVariables:
+        type: "object"
+        required: false
+        defaultValue: { }
+      pinned:
+        type: "boolean"
+        required: false
+        defaultValue: true
+      lambdaArgs:
+        type: "array"
+        required: false
+        defaultValue: [ ]
+      maxInstancesCount:
+        type: "number"
+        required: false
+        defaultValue: 100
+      pubsubTopics:
+        type: "array"
+        required: false
+        defaultValue: [ ]
+      containerParams:
+        type: "object"
+        required: false
+        defaultValue:
+          memorySizeInKB: 16384
+          mountROSysfs: true
+          volumes: [ ]
+          devices: [ ]
+      timeoutInSeconds:
+        type: "number"
+        required: false
+        defaultValue: 3
+      platforms:
+        type: "array"
+        required: false
+        defaultValue:
+          - os: "*"
+      componentDependencies:
+        type: "object"
+        required: false
+        defaultValue: { }
+      maxQueueSize:
+        type: "number"
+        required: false
+        defaultValue: 1000
+      statusTimeoutInSeconds:
+        type: "number"
+        required: false
+        defaultValue: 60
+      inputPayloadEncodingType:
+        type: "string"
+        required: false
+        defaultValue: "json"
+      containerMode:
+        type: "string"
+        required: false
+        defaultValue: "GreengrassContainer"

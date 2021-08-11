@@ -90,15 +90,14 @@ public class LambdaTransformer extends RecipeTransformer {
     }
 
     @Override
-    public ComponentRecipe transform(ComponentRecipe componentRecipe, JsonNode componentParams)
+    protected Class<?> initRecievingClass() {
+        return LambdaTemplateParams.class;
+    }
+
+    @Override
+    public ComponentRecipe transform(ComponentRecipe paramFile, Object componentParamsObj)
             throws RecipeTransformerException {
-        LambdaTemplateParams lambdaParameters;
-        try {
-            lambdaParameters =
-                    mapper.readValue(mapper.writeValueAsString(componentParams), LambdaTemplateParams.class);
-        } catch (JsonProcessingException e) {
-            throw new RecipeTransformerException(e);
-        }
+        LambdaTemplateParams lambdaParameters = (LambdaTemplateParams) componentParamsObj;
 
         List<Platform> componentPlatforms = lambdaParameters.getPlatforms();
         if (componentPlatforms == null || componentPlatforms.isEmpty()) {
@@ -153,10 +152,10 @@ public class LambdaTransformer extends RecipeTransformer {
 
         return ComponentRecipe.builder()
                 .recipeFormatVersion(RecipeFormatVersion.JAN_25_2020)
-                .componentName(componentRecipe.getComponentName())
+                .componentName(paramFile.getComponentName())
                 .componentDependencies(dependenciesMap)
-                .componentVersion(componentRecipe.getComponentVersion())
-                .componentDescription(componentRecipe.getComponentDescription())
+                .componentVersion(paramFile.getComponentVersion())
+                .componentDescription(paramFile.getComponentDescription())
                 .componentPublisher(AWS_LAMBDA_PUBLISHER)
                 .componentSource(lambdaParameters.getLambdaArn())
                 .manifests(manifests)

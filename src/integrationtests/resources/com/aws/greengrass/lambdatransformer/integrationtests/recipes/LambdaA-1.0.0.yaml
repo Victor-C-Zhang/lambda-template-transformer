@@ -6,8 +6,7 @@ ComponentVersion: '1.0.0'
 ComponentDependencies:
   LambdaTemplate:
     VersionRequirement: '1.0.0'
-ComponentConfiguration:
-  DefaultConfiguration:
-    lambdaArn: "hehe:hoohoo"
-    lambdaRuntime: java8
-    lambdaHandler: eeoo
+TemplateParameters:
+  lambdaArn: "hehe:hoohoo"
+  lambdaRuntime: java8
+  lambdaHandler: eeoo

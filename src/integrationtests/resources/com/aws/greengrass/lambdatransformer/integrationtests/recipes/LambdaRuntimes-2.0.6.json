@@ -1,0 +1,29 @@
+{
+  "RecipeFormatVersion": "2020-01-25",
+  "ComponentName": "aws.greengrass.LambdaRuntimes",
+  "ComponentVersion": "2.0.6",
+  "ComponentType": "aws.greengrass.generic",
+  "ComponentDescription": "The Lambda runtimes component provides the runtimes that Greengrass core devices use to run AWS Lambda functions.",
+  "ComponentPublisher": "AWS",
+  "Manifests": [
+    {
+      "Platform": {
+        "os": "linux"
+      },
+      "Lifecycle": {},
+      "Artifacts": [
+        {
+          "Uri": "greengrass:-PNxw23r5lB5Eie-cZ3N9ChqUnLpI52XABKE6EdtPUM=/runtime.zip",
+          "Digest": "E8G2NbTs7aW4yOUasoosULKMn/AgZYsVyftFRdazvJ0=",
+          "Algorithm": "SHA-256",
+          "Unarchive": "ZIP",
+          "Permission": {
+            "Read": "ALL",
+            "Execute": "NONE"
+          }
+        }
+      ]
+    }
+  ],
+  "Lifecycle": {}
+}

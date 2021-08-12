@@ -24,8 +24,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.mockito.Mock;
@@ -52,7 +53,6 @@ import static com.aws.greengrass.testcommons.testutilities.ExceptionLogProtector
 import static com.aws.greengrass.testcommons.testutilities.ExceptionLogProtector.ignoreExceptionUltimateCauseWithMessageSubstring;
 import static com.aws.greengrass.util.Utils.copyFolderRecursively;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith({MockitoExtension.class, GGExtension.class})
@@ -110,8 +110,8 @@ public class LambdaTransformerIntegTest extends NucleusLaunchUtils {
         }
     }
 
-    @Disabled
     @Test
+    @EnabledOnOs(OS.LINUX)
     void e2e() throws Exception {
         CountDownLatch firstDeploymentCDL = new CountDownLatch(1);
         DeploymentStatusKeeper deploymentStatusKeeper = kernel.getContext().get(DeploymentStatusKeeper.class);
@@ -139,7 +139,7 @@ public class LambdaTransformerIntegTest extends NucleusLaunchUtils {
 
         submitLocalDocument(request);
 
-        assertFalse(firstDeploymentCDL.await(10, TimeUnit.SECONDS), "Templating deployment did not succeed");
+        assertTrue(firstDeploymentCDL.await(10, TimeUnit.SECONDS), "Templating deployment did not succeed");
     }
 
     private void submitLocalDocument(LocalOverrideRequest request) throws Exception {

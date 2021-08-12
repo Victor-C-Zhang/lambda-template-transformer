@@ -1,0 +1,40 @@
+{
+  "RecipeFormatVersion": "2020-01-25",
+  "ComponentName": "aws.greengrass.LambdaManager",
+  "ComponentVersion": "2.1.2",
+  "ComponentType": "aws.greengrass.plugin",
+  "ComponentDescription": "The Lambda manager component manages work items and interprocess communication for AWS Lambda functions that run on the Greengrass core devices",
+  "ComponentPublisher": "AWS",
+  "ComponentConfiguration": {
+    "DefaultConfiguration": {
+      "getResultTimeoutInSecond": "60"
+    }
+  },
+  "ComponentDependencies": {
+    "aws.greengrass.Nucleus": {
+      "VersionRequirement": ">=2.0.0 <2.4.0",
+      "DependencyType": "SOFT"
+    }
+  },
+  "Manifests": [
+    {
+      "Platform": {
+        "os": "linux"
+      },
+      "Lifecycle": {},
+      "Artifacts": [
+        {
+          "Uri": "greengrass:qsv9QiPByKdJapp4KVJTnkHQ5LB5m2tY39qKLS2Bi88=/aws.greengrass.LambdaManager.jar",
+          "Digest": "SERQh3ZCuPGQb/9zZ+kdQVjrcMkjnoKZiZ/DptJPjqo=",
+          "Algorithm": "SHA-256",
+          "Unarchive": "NONE",
+          "Permission": {
+            "Read": "OWNER",
+            "Execute": "NONE"
+          }
+        }
+      ]
+    }
+  ],
+  "Lifecycle": {}
+}

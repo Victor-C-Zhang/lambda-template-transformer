@@ -128,6 +128,7 @@ public class LambdaTransformerIntegTest extends NucleusLaunchUtils {
 
         Map<String, String> componentsToMerge = new HashMap<>();
         componentsToMerge.put("LambdaA", "1.0.0");
+        componentsToMerge.put("aws.greengrass.Nucleus", "2.3.0");
 
         Map<String, ConfigurationUpdateOperation> updateConfig = new HashMap<>();
 

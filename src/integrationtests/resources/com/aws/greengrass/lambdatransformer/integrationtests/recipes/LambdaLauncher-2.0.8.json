@@ -1,0 +1,174 @@
+{
+  "RecipeFormatVersion": "2020-01-25",
+  "ComponentName": "aws.greengrass.LambdaLauncher",
+  "ComponentVersion": "2.0.8",
+  "ComponentType": "aws.greengrass.generic",
+  "ComponentDescription": "The Lambda launcher component starts and stops AWS Lambda functions on Greengrass core devices. This component also sets up any containerization and runs processes as the users that you specify.",
+  "ComponentPublisher": "AWS",
+  "ComponentDependencies": {
+    "aws.greengrass.LambdaManager": {
+      "VersionRequirement": ">=2.0.0 <2.2.0",
+      "DependencyType": "HARD"
+    }
+  },
+  "Manifests": [
+    {
+      "Platform": {
+        "os": "linux",
+        "architecture.detail": "armv6l",
+        "architecture": "arm"
+      },
+      "Lifecycle": {},
+      "Artifacts": [
+        {
+          "Uri": "greengrass:yYlVxpGrta-rgO8AlkBUaWzntgkkFU8Xz70ZxnFCMOQ=/lambda-launcher",
+          "Digest": "DVRN2sA8LgUhIUaIjZzhrzuQ2JRLDvnAG0CPJs29gSw=",
+          "Algorithm": "SHA-256",
+          "Unarchive": "NONE",
+          "Permission": {
+            "Read": "ALL",
+            "Execute": "ALL"
+          }
+        },
+        {
+          "Uri": "greengrass:GN45KgigscHEOc90DG-7_XF1Ai6NhWh2WArC1j22ZvQ=/LICENSE.txt",
+          "Digest": "0hqHsA/hjY07sMeMkOYHuZZUupLyAX7s5cUdu8Imb7Y=",
+          "Algorithm": "SHA-256",
+          "Unarchive": "NONE",
+          "Permission": {
+            "Read": "ALL",
+            "Execute": "NONE"
+          }
+        },
+        {
+          "Uri": "greengrass:etBBY6Z0luStPdSwG9DsuwmllcA0rxWnIzZSSc7QRhQ=/THIRD-PARTY-LICENSES.txt",
+          "Digest": "HGr6JBh9tOnq/90MCRlascUk4QiNIlHgqf4vw4A8+Hw=",
+          "Algorithm": "SHA-256",
+          "Unarchive": "NONE",
+          "Permission": {
+            "Read": "ALL",
+            "Execute": "NONE"
+          }
+        }
+      ]
+    },
+    {
+      "Platform": {
+        "os": "linux",
+        "architecture": "arm"
+      },
+      "Lifecycle": {},
+      "Artifacts": [
+        {
+          "Uri": "greengrass:kmm0UHrWXC5wkaOKTTxJckQ3vDO8qe4K1NFzcDeJtQM=/lambda-launcher",
+          "Digest": "WWmDhuPaq+0H/j0uwLX2e5QPiMtIey6pce5IOp1YEro=",
+          "Algorithm": "SHA-256",
+          "Unarchive": "NONE",
+          "Permission": {
+            "Read": "ALL",
+            "Execute": "ALL"
+          }
+        },
+        {
+          "Uri": "greengrass:GN45KgigscHEOc90DG-7_XF1Ai6NhWh2WArC1j22ZvQ=/LICENSE.txt",
+          "Digest": "0hqHsA/hjY07sMeMkOYHuZZUupLyAX7s5cUdu8Imb7Y=",
+          "Algorithm": "SHA-256",
+          "Unarchive": "NONE",
+          "Permission": {
+            "Read": "ALL",
+            "Execute": "NONE"
+          }
+        },
+        {
+          "Uri": "greengrass:etBBY6Z0luStPdSwG9DsuwmllcA0rxWnIzZSSc7QRhQ=/THIRD-PARTY-LICENSES.txt",
+          "Digest": "HGr6JBh9tOnq/90MCRlascUk4QiNIlHgqf4vw4A8+Hw=",
+          "Algorithm": "SHA-256",
+          "Unarchive": "NONE",
+          "Permission": {
+            "Read": "ALL",
+            "Execute": "NONE"
+          }
+        }
+      ]
+    },
+    {
+      "Platform": {
+        "os": "linux",
+        "architecture": "aarch64"
+      },
+      "Lifecycle": {},
+      "Artifacts": [
+        {
+          "Uri": "greengrass:f3BnxPzjcncMKposMnZflDbN8gEM9HOYqJR649YAfKY=/lambda-launcher",
+          "Digest": "vdhcHeXjZEKWk72xaVfymICLBujNTgh35NM/XoiWI4A=",
+          "Algorithm": "SHA-256",
+          "Unarchive": "NONE",
+          "Permission": {
+            "Read": "ALL",
+            "Execute": "ALL"
+          }
+        },
+        {
+          "Uri": "greengrass:GN45KgigscHEOc90DG-7_XF1Ai6NhWh2WArC1j22ZvQ=/LICENSE.txt",
+          "Digest": "0hqHsA/hjY07sMeMkOYHuZZUupLyAX7s5cUdu8Imb7Y=",
+          "Algorithm": "SHA-256",
+          "Unarchive": "NONE",
+          "Permission": {
+            "Read": "ALL",
+            "Execute": "NONE"
+          }
+        },
+        {
+          "Uri": "greengrass:etBBY6Z0luStPdSwG9DsuwmllcA0rxWnIzZSSc7QRhQ=/THIRD-PARTY-LICENSES.txt",
+          "Digest": "HGr6JBh9tOnq/90MCRlascUk4QiNIlHgqf4vw4A8+Hw=",
+          "Algorithm": "SHA-256",
+          "Unarchive": "NONE",
+          "Permission": {
+            "Read": "ALL",
+            "Execute": "NONE"
+          }
+        }
+      ]
+    },
+    {
+      "Platform": {
+        "os": "linux",
+        "architecture": "amd64"
+      },
+      "Lifecycle": {},
+      "Artifacts": [
+        {
+          "Uri": "greengrass:BKIIUM8_lcMtLpt3XJMX0us635V_13NyAK3EunPU-4Q=/lambda-launcher",
+          "Digest": "Stsh5YgfGZ7nkheVrPZ6em686uGNJ296auvEZ83yzQ0=",
+          "Algorithm": "SHA-256",
+          "Unarchive": "NONE",
+          "Permission": {
+            "Read": "ALL",
+            "Execute": "ALL"
+          }
+        },
+        {
+          "Uri": "greengrass:GN45KgigscHEOc90DG-7_XF1Ai6NhWh2WArC1j22ZvQ=/LICENSE.txt",
+          "Digest": "0hqHsA/hjY07sMeMkOYHuZZUupLyAX7s5cUdu8Imb7Y=",
+          "Algorithm": "SHA-256",
+          "Unarchive": "NONE",
+          "Permission": {
+            "Read": "ALL",
+            "Execute": "NONE"
+          }
+        },
+        {
+          "Uri": "greengrass:etBBY6Z0luStPdSwG9DsuwmllcA0rxWnIzZSSc7QRhQ=/THIRD-PARTY-LICENSES.txt",
+          "Digest": "HGr6JBh9tOnq/90MCRlascUk4QiNIlHgqf4vw4A8+Hw=",
+          "Algorithm": "SHA-256",
+          "Unarchive": "NONE",
+          "Permission": {
+            "Read": "ALL",
+            "Execute": "NONE"
+          }
+        }
+      ]
+    }
+  ],
+  "Lifecycle": {}
+}

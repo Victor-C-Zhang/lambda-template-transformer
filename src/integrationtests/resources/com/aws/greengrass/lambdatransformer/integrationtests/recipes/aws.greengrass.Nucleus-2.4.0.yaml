@@ -35,8 +35,6 @@
       "Artifacts": [
         {
           "Uri": "greengrass:9Adg50jcilJ4gsYuEI8f0iPQJNtD941HUZ7ddcgOVow=/aws.greengrass.nucleus.zip",
-          "Digest": "G61UUPJQwEEvpzUKiTuMHZ0mIXYRGoS+RKzjgHETHmI=",
-          "Algorithm": "SHA-256",
           "Unarchive": "ZIP",
           "Permission": {
             "Read": "ALL",
@@ -58,8 +56,6 @@
       "Artifacts": [
         {
           "Uri": "greengrass:9Adg50jcilJ4gsYuEI8f0iPQJNtD941HUZ7ddcgOVow=/aws.greengrass.nucleus.zip",
-          "Digest": "G61UUPJQwEEvpzUKiTuMHZ0mIXYRGoS+RKzjgHETHmI=",
-          "Algorithm": "SHA-256",
           "Unarchive": "ZIP",
           "Permission": {
             "Read": "ALL",

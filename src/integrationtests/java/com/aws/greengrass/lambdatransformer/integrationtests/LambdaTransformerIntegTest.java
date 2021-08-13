@@ -78,6 +78,10 @@ public class LambdaTransformerIntegTest extends NucleusLaunchUtils {
         ignoreExceptionUltimateCauseWithMessageSubstring(context, "Unable to locate the unpack directory of Nucleus artifacts");
 
         kernel = new Kernel();
+        new DeviceConfiguration(kernel, "thing.thingName", "thing.dataEndpoint", "thing.credEndpoint",
+                "privKeyFilePath", "certFilePath", "caFilePath", "awsRegion", "roleAliasName");
+        // Make sure tlog persists the device configuration
+        kernel.getContext().waitForPublishQueueToClear();
         kernel.getConfig().lookup(SERVICES_NAMESPACE_TOPIC, DEFAULT_NUCLEUS_COMPONENT_NAME,
                 VERSION_CONFIG_KEY).dflt(NUCLEUS_VERSION);
         kernel.getConfig().lookup(SETENV_CONFIG_NAMESPACE, GGC_VERSION_ENV).dflt(NUCLEUS_VERSION);

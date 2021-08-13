@@ -44,10 +44,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.aws.greengrass.componentmanager.KernelConfigResolver.VERSION_CONFIG_KEY;
 import static com.aws.greengrass.deployment.DeploymentService.DEPLOYMENT_SERVICE_TOPICS;
 import static com.aws.greengrass.deployment.DeploymentStatusKeeper.DEPLOYMENT_ID_KEY_NAME;
 import static com.aws.greengrass.deployment.DeploymentStatusKeeper.DEPLOYMENT_STATUS_KEY_NAME;
+import static com.aws.greengrass.deployment.DeviceConfiguration.DEFAULT_NUCLEUS_COMPONENT_NAME;
+import static com.aws.greengrass.deployment.DeviceConfiguration.GGC_VERSION_ENV;
 import static com.aws.greengrass.integrationtests.BaseITCase.setDeviceConfig;
+import static com.aws.greengrass.lifecyclemanager.GreengrassService.SERVICES_NAMESPACE_TOPIC;
+import static com.aws.greengrass.lifecyclemanager.GreengrassService.SETENV_CONFIG_NAMESPACE;
 import static com.aws.greengrass.status.FleetStatusService.FLEET_STATUS_SERVICE_TOPICS;
 import static com.aws.greengrass.testcommons.testutilities.ExceptionLogProtector.ignoreExceptionOfType;
 import static com.aws.greengrass.testcommons.testutilities.ExceptionLogProtector.ignoreExceptionUltimateCauseWithMessageSubstring;
@@ -59,6 +64,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class LambdaTransformerIntegTest extends NucleusLaunchUtils {
     private static final ObjectMapper OBJECT_MAPPER =
             new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+    private static String NUCLEUS_VERSION = "2.4.0";
 
     private DeploymentQueue deploymentQueue;
     private Path localStoreContentPath;
@@ -72,6 +78,9 @@ public class LambdaTransformerIntegTest extends NucleusLaunchUtils {
         ignoreExceptionUltimateCauseWithMessageSubstring(context, "Unable to locate the unpack directory of Nucleus artifacts");
 
         kernel = new Kernel();
+        kernel.getConfig().lookup(SERVICES_NAMESPACE_TOPIC, DEFAULT_NUCLEUS_COMPONENT_NAME,
+                VERSION_CONFIG_KEY).dflt(NUCLEUS_VERSION);
+        kernel.getConfig().lookup(SETENV_CONFIG_NAMESPACE, GGC_VERSION_ENV).dflt(NUCLEUS_VERSION);
         kernel.getContext().put(DeploymentDocumentDownloader.class, deploymentDocumentDownloader);
         NoOpPathOwnershipHandler.register(kernel);
         ConfigPlatformResolver.initKernelWithMultiPlatformConfig(kernel,

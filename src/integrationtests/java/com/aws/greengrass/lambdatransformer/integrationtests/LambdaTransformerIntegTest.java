@@ -140,7 +140,7 @@ public class LambdaTransformerIntegTest extends NucleusLaunchUtils {
 
         submitLocalDocument(request);
 
-        assertTrue(firstDeploymentCDL.await(10, TimeUnit.SECONDS), "Templating deployment did not succeed");
+        assertTrue(firstDeploymentCDL.await(20, TimeUnit.SECONDS), "Templating deployment did not succeed");
     }
 
     private void submitLocalDocument(LocalOverrideRequest request) throws Exception {

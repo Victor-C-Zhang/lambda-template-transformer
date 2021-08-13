@@ -10,12 +10,6 @@
       "getResultTimeoutInSecond": "60"
     }
   },
-  "ComponentDependencies": {
-    "aws.greengrass.Nucleus": {
-      "VersionRequirement": ">=2.0.0 <2.5.0",
-      "DependencyType": "SOFT"
-    }
-  },
   "Manifests": [
     {
       "Platform": {

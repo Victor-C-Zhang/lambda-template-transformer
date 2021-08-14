@@ -178,12 +178,12 @@ public class BaseE2ETestCase implements AutoCloseable {
 
     @BeforeAll
     static void beforeAll() throws Exception {
-        initializePackageStore();
+//        initializePackageStore();
 
         // Self hosted artifacts must exist in S3 before creating a component version
-        createS3BucketsForTestComponentArtifacts();
-        uploadComponentArtifactToS3(componentsWithArtifactsInS3);
-        uploadTestComponentsToCms(componentsWithArtifactsInS3);
+//        createS3BucketsForTestComponentArtifacts();
+//        uploadComponentArtifactToS3(componentsWithArtifactsInS3);
+//        uploadTestComponentsToCms(componentsWithArtifactsInS3);
     }
 
     @AfterAll
@@ -371,10 +371,10 @@ public class BaseE2ETestCase implements AutoCloseable {
     protected CreateDeploymentResponse draftAndCreateDeployment(CreateDeploymentRequest createDeploymentRequest) {
 
         // update package name with random suffix to avoid conflict in cloud
-        Map<String, ComponentDeploymentSpecification> updatedPkgMetadata = new HashMap<>();
-        createDeploymentRequest.components()
-                .forEach((key, val) -> updatedPkgMetadata.put(getTestComponentNameInCloud(key), val));
-        createDeploymentRequest = createDeploymentRequest.toBuilder().components(updatedPkgMetadata).build();
+//        Map<String, ComponentDeploymentSpecification> updatedPkgMetadata = new HashMap<>();
+//        createDeploymentRequest.components()
+//                .forEach((key, val) -> updatedPkgMetadata.put(getTestComponentNameInCloud(key), val));
+//        createDeploymentRequest = createDeploymentRequest.toBuilder().components(updatedPkgMetadata).build();
 
         // set default value
         if (createDeploymentRequest.targetArn() == null) {

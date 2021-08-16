@@ -55,7 +55,6 @@ public class LambdaDeploymentE2ETest extends BaseE2ETestCase {
             new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
     private static final String NUCLEUS_VERSION = "2.4.99";
 
-    private CountDownLatch stdoutCountdown;
     private Path localStoreContentPath;
     private DeploymentQueue deploymentQueue;
 

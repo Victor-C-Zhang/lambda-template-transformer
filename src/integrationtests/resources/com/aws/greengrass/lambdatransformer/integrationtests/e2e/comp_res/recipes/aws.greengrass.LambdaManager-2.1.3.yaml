@@ -2,17 +2,13 @@
 RecipeFormatVersion: "2020-01-25"
 ComponentName: "aws.greengrass.LambdaManager"
 ComponentVersion: "2.1.3"
-ComponentType: "aws.greengrass.plugin"
+ComponentType: "aws.greengrass.generic" # had to change this from plugin to dodge ServiceLoadException
 ComponentDescription: "The Lambda manager component manages work items and interprocess\
   \ communication for AWS Lambda functions that run on the Greengrass core devices"
 ComponentPublisher: "AWS"
 ComponentConfiguration:
   DefaultConfiguration:
     getResultTimeoutInSecond: "60"
-ComponentDependencies:
-  aws.greengrass.Nucleus:
-    VersionRequirement: ">=2.0.0 <2.5.0"
-    DependencyType: "SOFT"
 Manifests:
 - Platform:
     os: "linux"

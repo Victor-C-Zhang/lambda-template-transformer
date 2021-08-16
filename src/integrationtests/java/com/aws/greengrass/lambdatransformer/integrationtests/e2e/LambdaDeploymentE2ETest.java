@@ -5,6 +5,7 @@
 
 package com.aws.greengrass.lambdatransformer.integrationtests.e2e;
 
+import com.aws.greengrass.config.Topic;
 import com.aws.greengrass.deployment.DeploymentQueue;
 import com.aws.greengrass.deployment.DeploymentStatusKeeper;
 import com.aws.greengrass.deployment.DeviceConfiguration;
@@ -22,6 +23,8 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import software.amazon.awssdk.services.greengrassv2data.model.GreengrassV2DataException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,6 +44,7 @@ import static com.aws.greengrass.deployment.DeviceConfiguration.DEFAULT_NUCLEUS_
 import static com.aws.greengrass.deployment.DeviceConfiguration.GGC_VERSION_ENV;
 import static com.aws.greengrass.lifecyclemanager.GreengrassService.SERVICES_NAMESPACE_TOPIC;
 import static com.aws.greengrass.lifecyclemanager.GreengrassService.SETENV_CONFIG_NAMESPACE;
+import static com.aws.greengrass.testcommons.testutilities.ExceptionLogProtector.ignoreExceptionOfType;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -69,10 +73,12 @@ public class LambdaDeploymentE2ETest extends BaseE2ETestCase {
     }
 
     @BeforeEach
-    void launchKernel() throws Exception {
+    void launchKernel(ExtensionContext context) throws Exception {
+        ignoreExceptionOfType(context, GreengrassV2DataException.class);
+
         initKernel();
         kernel.getConfig().lookup(SERVICES_NAMESPACE_TOPIC, DEFAULT_NUCLEUS_COMPONENT_NAME,
-                VERSION_CONFIG_KEY).dflt(NUCLEUS_VERSION);
+                VERSION_CONFIG_KEY).withNewerValue(Topic.DEFAULT_VALUE_TIMESTAMP + 1, NUCLEUS_VERSION);
         kernel.getConfig().lookup(SETENV_CONFIG_NAMESPACE, GGC_VERSION_ENV).dflt(NUCLEUS_VERSION);
 
         kernel.launch();

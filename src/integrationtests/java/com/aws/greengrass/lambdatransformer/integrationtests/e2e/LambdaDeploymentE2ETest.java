@@ -5,19 +5,13 @@
 
 package com.aws.greengrass.lambdatransformer.integrationtests.e2e;
 
-import com.aws.greengrass.dependency.State;
 import com.aws.greengrass.deployment.DeploymentQueue;
 import com.aws.greengrass.deployment.DeploymentStatusKeeper;
 import com.aws.greengrass.deployment.DeviceConfiguration;
 import com.aws.greengrass.deployment.model.ConfigurationUpdateOperation;
 import com.aws.greengrass.deployment.model.Deployment;
 import com.aws.greengrass.deployment.model.LocalOverrideRequest;
-import com.aws.greengrass.integrationtests.e2e.util.IotJobsUtils;
-import com.aws.greengrass.lambdatransformer.integrationtests.LambdaTransformerIntegTest;
-import com.aws.greengrass.logging.impl.GreengrassLogMessage;
 import com.aws.greengrass.testcommons.testutilities.GGExtension;
-import com.aws.greengrass.testcommons.testutilities.TestUtils;
-import com.aws.greengrass.util.Utils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -25,24 +19,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
-import software.amazon.awssdk.services.greengrassv2.model.ComponentDeploymentSpecification;
-import software.amazon.awssdk.services.greengrassv2.model.CreateDeploymentRequest;
-import software.amazon.awssdk.services.greengrassv2.model.CreateDeploymentResponse;
-import software.amazon.awssdk.services.iot.model.JobExecutionStatus;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Duration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,10 +41,7 @@ import static com.aws.greengrass.deployment.DeviceConfiguration.DEFAULT_NUCLEUS_
 import static com.aws.greengrass.deployment.DeviceConfiguration.GGC_VERSION_ENV;
 import static com.aws.greengrass.lifecyclemanager.GreengrassService.SERVICES_NAMESPACE_TOPIC;
 import static com.aws.greengrass.lifecyclemanager.GreengrassService.SETENV_CONFIG_NAMESPACE;
-import static com.github.grantwest.eventually.EventuallyLambdaMatcher.eventuallyEval;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(GGExtension.class)
@@ -101,11 +86,12 @@ public class LambdaDeploymentE2ETest extends BaseE2ETestCase {
         deploymentQueue =  kernel.getContext().get(DeploymentQueue.class);
 
         localStoreContentPath =
-                Paths.get(LambdaTransformerIntegTest.class.getResource(".").toURI());
+                Paths.get(LambdaDeploymentE2ETest.class.getResource("comp_res").toURI());
         renameTestTransformerJarsToTransformerJars(localStoreContentPath.resolve("artifacts"));
     }
 
     @Timeout(value = 10, unit = TimeUnit.MINUTES)
+    @EnabledOnOs(OS.LINUX)
     @Test
     void e2e()
             throws Exception {
@@ -119,33 +105,11 @@ public class LambdaDeploymentE2ETest extends BaseE2ETestCase {
             return true;
         },"LambdaTemplateTest");
 
-        List<String> stdouts = new CopyOnWriteArrayList<>();
-        Consumer<GreengrassLogMessage> listener = m -> {
-            String messageOnStdout = m.getMessage();
-            if (messageOnStdout != null && messageOnStdout.contains("Hello Greengrass")) {
-                stdouts.add(messageOnStdout);
-                stdoutCountdown.countDown(); // countdown when received output to verify
-            }
-        };
-        try (AutoCloseable l = TestUtils.createCloseableLogListener(listener)) {
-            stdoutCountdown = new CountDownLatch(1);
-            CreateDeploymentRequest createDeployment1 = CreateDeploymentRequest.builder().components(
-                    Utils.immutableMap("FakeLambda",
-                            ComponentDeploymentSpecification.builder().componentVersion("1.0.0").build())).build();
-
-            CreateDeploymentResponse createDeploymentResult1 = draftAndCreateDeployment(createDeployment1);
-
-            IotJobsUtils.waitForJobExecutionStatusToSatisfy(iotClient, createDeploymentResult1.iotJobId(),
-                    thingInfo.getThingName(), Duration.ofMinutes(2), s -> s.equals(JobExecutionStatus.SUCCEEDED));
-
-            assertThat(kernel.getMain()::getState, eventuallyEval(is(State.FINISHED)));
-        }
-
         String recipeDir = localStoreContentPath.resolve("recipes").toAbsolutePath().toString();
         String artifactsDir = localStoreContentPath.resolve("artifacts").toAbsolutePath().toString();
 
         Map<String, String> componentsToMerge = new HashMap<>();
-        componentsToMerge.put("LambdaA", "1.0.0");
+        componentsToMerge.put("LambdaStrapper", "1.0.0");
 
         Map<String, ConfigurationUpdateOperation> updateConfig = new HashMap<>();
 
@@ -157,7 +121,7 @@ public class LambdaDeploymentE2ETest extends BaseE2ETestCase {
 
         submitLocalDocument(request);
 
-        assertTrue(firstDeploymentCDL.await(20, TimeUnit.SECONDS), "Templating deployment did not succeed");
+        assertTrue(firstDeploymentCDL.await(10, TimeUnit.SECONDS), "Templating deployment did not succeed");
     }
 
     private void submitLocalDocument(LocalOverrideRequest request) throws Exception {

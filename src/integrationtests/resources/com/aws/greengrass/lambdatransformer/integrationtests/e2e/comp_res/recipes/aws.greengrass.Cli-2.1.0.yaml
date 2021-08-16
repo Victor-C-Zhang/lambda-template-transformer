@@ -1,0 +1,52 @@
+---
+RecipeFormatVersion: "2020-01-25"
+ComponentName: "aws.greengrass.Cli"
+ComponentVersion: "2.1.0"
+ComponentType: "aws.greengrass.plugin"
+ComponentDescription: "The Greengrass CLI component provides a local command-line\
+  \ interface that you can use on Greengrass core devices to develop and debug components\
+  \ locally. The Greengrass CLI lets you create local deployments and restart components\
+  \ on the Greengrass core device, for example."
+ComponentPublisher: "AWS"
+ComponentDependencies:
+  aws.greengrass.Nucleus:
+    VersionRequirement: ">=2.1.0 <2.2.0"
+    DependencyType: "SOFT"
+Manifests:
+- Platform:
+    os: "linux"
+  Lifecycle: {}
+  Artifacts:
+  - Uri: "greengrass:UbhqXXSJj65QLVH5UqL6nBRterSKIhQu5FKeVAStZGc=/aws.greengrass.cli.client.zip"
+    Digest: "uziZS73Z6dKgQgB0tna9WCJ1KhtyhsAb/DSv2Eaev8I="
+    Algorithm: "SHA-256"
+    Unarchive: "ZIP"
+    Permission:
+      Read: "ALL"
+      Execute: "ALL"
+  - Uri: "greengrass:2U_cb2X7-GFaXPMsXRutuT_zB6CdImClH0DSNVvzy1Y=/aws.greengrass.Cli.jar"
+    Digest: "UpynbTgG+wYShtkcAr3X+l8/9QerGwaMw5U4IiicrMc="
+    Algorithm: "SHA-256"
+    Unarchive: "NONE"
+    Permission:
+      Read: "OWNER"
+      Execute: "NONE"
+- Platform:
+    os: "darwin"
+  Lifecycle: {}
+  Artifacts:
+  - Uri: "greengrass:UbhqXXSJj65QLVH5UqL6nBRterSKIhQu5FKeVAStZGc=/aws.greengrass.cli.client.zip"
+    Digest: "uziZS73Z6dKgQgB0tna9WCJ1KhtyhsAb/DSv2Eaev8I="
+    Algorithm: "SHA-256"
+    Unarchive: "ZIP"
+    Permission:
+      Read: "ALL"
+      Execute: "ALL"
+  - Uri: "greengrass:2U_cb2X7-GFaXPMsXRutuT_zB6CdImClH0DSNVvzy1Y=/aws.greengrass.Cli.jar"
+    Digest: "UpynbTgG+wYShtkcAr3X+l8/9QerGwaMw5U4IiicrMc="
+    Algorithm: "SHA-256"
+    Unarchive: "NONE"
+    Permission:
+      Read: "OWNER"
+      Execute: "NONE"
+Lifecycle: {}

@@ -5,16 +5,25 @@
 
 package com.aws.greengrass.lambdatransformer.integrationtests.e2e;
 
+import com.aws.greengrass.componentmanager.KernelConfigResolver;
 import com.aws.greengrass.config.Topic;
+import com.aws.greengrass.dependency.State;
 import com.aws.greengrass.deployment.DeploymentQueue;
 import com.aws.greengrass.deployment.DeploymentStatusKeeper;
 import com.aws.greengrass.deployment.DeviceConfiguration;
 import com.aws.greengrass.deployment.model.ConfigurationUpdateOperation;
 import com.aws.greengrass.deployment.model.Deployment;
 import com.aws.greengrass.deployment.model.LocalOverrideRequest;
+import com.aws.greengrass.integrationtests.e2e.util.IotJobsUtils;
+import com.aws.greengrass.logging.impl.GreengrassLogMessage;
 import com.aws.greengrass.testcommons.testutilities.GGExtension;
+import com.aws.greengrass.testcommons.testutilities.TestUtils;
+import com.aws.greengrass.util.Utils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.hamcrest.collection.IsMapContaining;
+import org.hamcrest.collection.IsMapWithSize;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -24,16 +33,27 @@ import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import software.amazon.awssdk.services.greengrassv2.model.ComponentConfigurationUpdate;
+import software.amazon.awssdk.services.greengrassv2.model.ComponentDeploymentSpecification;
+import software.amazon.awssdk.services.greengrassv2.model.CreateDeploymentRequest;
+import software.amazon.awssdk.services.greengrassv2.model.CreateDeploymentResponse;
 import software.amazon.awssdk.services.greengrassv2data.model.GreengrassV2DataException;
+import software.amazon.awssdk.services.iot.model.JobExecutionStatus;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,7 +66,11 @@ import static com.aws.greengrass.lifecyclemanager.GreengrassService.SERVICES_NAM
 import static com.aws.greengrass.lifecyclemanager.GreengrassService.SETENV_CONFIG_NAMESPACE;
 import static com.aws.greengrass.testcommons.testutilities.ExceptionLogProtector.ignoreExceptionOfType;
 import static com.aws.greengrass.testcommons.testutilities.ExceptionLogProtector.ignoreExceptionUltimateCauseWithMessageSubstring;
+import static com.github.grantwest.eventually.EventuallyLambdaMatcher.eventuallyEval;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(GGExtension.class)
@@ -56,6 +80,7 @@ public class LambdaDeploymentE2ETest extends BaseE2ETestCase {
             new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
     private static final String NUCLEUS_VERSION = "2.4.99";
 
+    CountDownLatch stdoutCountdown;
     private Path localStoreContentPath;
     private DeploymentQueue deploymentQueue;
 
@@ -93,7 +118,7 @@ public class LambdaDeploymentE2ETest extends BaseE2ETestCase {
         deploymentQueue =  kernel.getContext().get(DeploymentQueue.class);
 
         localStoreContentPath =
-                Paths.get(LambdaDeploymentE2ETest.class.getResource("comp_res").toURI());
+                Paths.get(LambdaDeploymentE2ETest.class.getResource("component_resources").toURI());
         renameTestTransformerJarsToTransformerJars(localStoreContentPath.resolve("artifacts"));
     }
 
@@ -112,11 +137,34 @@ public class LambdaDeploymentE2ETest extends BaseE2ETestCase {
             return true;
         },"LambdaTemplateTest");
 
+        // Set up stdout listener to capture stdout for verify interpolation
+        List<String> stdouts = new CopyOnWriteArrayList<>();
+        Consumer<GreengrassLogMessage> listener = m -> {
+            String messageOnStdout = m.getMessage();
+            if (messageOnStdout != null && messageOnStdout.contains("CustomerApp output.")) {
+                stdouts.add(messageOnStdout);
+                stdoutCountdown.countDown(); // countdown when received output to verify
+            }
+        };
+
+        try (AutoCloseable l = TestUtils.createCloseableLogListener(listener)) {
+            stdoutCountdown = new CountDownLatch(1);
+            // 1st Deployment to have some services running in Kernel with default configuration
+            CreateDeploymentRequest createDeployment1 = CreateDeploymentRequest.builder().components(
+                    Utils.immutableMap("FakeLambda",
+                            ComponentDeploymentSpecification.builder().componentVersion("1.0.0").build())).build();
+
+            CreateDeploymentResponse createDeploymentResult1 = draftAndCreateDeployment(createDeployment1);
+
+            IotJobsUtils.waitForJobExecutionStatusToSatisfy(iotClient, createDeploymentResult1.iotJobId(),
+                    thingInfo.getThingName(), Duration.ofMinutes(1), s -> s.equals(JobExecutionStatus.SUCCEEDED));
+        }
+
         String recipeDir = localStoreContentPath.resolve("recipes").toAbsolutePath().toString();
         String artifactsDir = localStoreContentPath.resolve("artifacts").toAbsolutePath().toString();
 
         Map<String, String> componentsToMerge = new HashMap<>();
-        componentsToMerge.put("LambdaStrapper", "1.0.0");
+        componentsToMerge.put("LambdaA", "1.0.0");
 
         Map<String, ConfigurationUpdateOperation> updateConfig = new HashMap<>();
 

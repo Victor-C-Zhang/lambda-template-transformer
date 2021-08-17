@@ -63,6 +63,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(GGExtension.class)
 @Tag("E2E")
+@EnabledOnOs(OS.LINUX)
 public class LambdaDeploymentE2ETest extends BaseE2ETestCase {
     private static final ObjectMapper OBJECT_MAPPER =
             new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
@@ -123,7 +124,6 @@ public class LambdaDeploymentE2ETest extends BaseE2ETestCase {
     }
 
     @Timeout(value = 10, unit = TimeUnit.MINUTES)
-    @EnabledOnOs(OS.LINUX)
     @Test
     void e2e()
             throws Exception {

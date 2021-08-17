@@ -27,6 +27,8 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.io.TempDir;
@@ -59,6 +61,7 @@ import static software.amazon.awssdk.services.greengrassv2.model.DeploymentFailu
  * Base class for E2E tests, with the following functionality: * Bootstrap one IoT thing group and one IoT thing, and
  * add thing to the group. * Manages integration points and API calls to Greengrass cloud services in Beta stage.
  */
+@EnabledOnOs(OS.LINUX)
 @ExtendWith(GGExtension.class)
 public class BaseE2ETestCase implements AutoCloseable {
     protected static final Region GAMMA_REGION = Region.US_EAST_1;

@@ -5,14 +5,8 @@
 
 package com.aws.greengrass.lambdatransformer.integrationtests.e2e;
 
-import com.amazon.aws.iot.greengrass.component.common.ComponentRecipe;
-import com.amazon.aws.iot.greengrass.component.common.DependencyProperties;
 import com.aws.greengrass.componentmanager.ComponentStore;
-import com.aws.greengrass.componentmanager.KernelConfigResolver;
 import com.aws.greengrass.componentmanager.models.ComponentIdentifier;
-import com.aws.greengrass.config.Topic;
-import com.aws.greengrass.config.Topics;
-import com.aws.greengrass.dependency.State;
 import com.aws.greengrass.deployment.DeploymentQueue;
 import com.aws.greengrass.deployment.DeploymentService;
 import com.aws.greengrass.deployment.DeploymentStatusKeeper;
@@ -27,20 +21,12 @@ import com.aws.greengrass.testcommons.testutilities.TestUtils;
 import com.aws.greengrass.util.Utils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vdurmont.semver4j.Semver;
-import org.hamcrest.collection.IsMapContaining;
-import org.hamcrest.collection.IsMapWithSize;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import software.amazon.awssdk.services.greengrassv2.model.ComponentConfigurationUpdate;
 import software.amazon.awssdk.services.greengrassv2.model.ComponentDeploymentSpecification;
 import software.amazon.awssdk.services.greengrassv2.model.CreateDeploymentRequest;
 import software.amazon.awssdk.services.greengrassv2.model.CreateDeploymentResponse;
@@ -52,8 +38,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,15 +54,11 @@ import static com.aws.greengrass.deployment.DeploymentStatusKeeper.DEPLOYMENT_ID
 import static com.aws.greengrass.deployment.DeploymentStatusKeeper.DEPLOYMENT_STATUS_KEY_NAME;
 import static com.aws.greengrass.deployment.DeviceConfiguration.DEFAULT_NUCLEUS_COMPONENT_NAME;
 import static com.aws.greengrass.deployment.DeviceConfiguration.GGC_VERSION_ENV;
-import static com.aws.greengrass.lifecyclemanager.GreengrassService.*;
-import static com.aws.greengrass.lifecyclemanager.GreengrassService.SERVICE_LIFECYCLE_NAMESPACE_TOPIC;
+import static com.aws.greengrass.lifecyclemanager.GreengrassService.SERVICES_NAMESPACE_TOPIC;
+import static com.aws.greengrass.lifecyclemanager.GreengrassService.SETENV_CONFIG_NAMESPACE;
 import static com.aws.greengrass.testcommons.testutilities.ExceptionLogProtector.ignoreExceptionOfType;
 import static com.aws.greengrass.testcommons.testutilities.ExceptionLogProtector.ignoreExceptionUltimateCauseWithMessageSubstring;
-import static com.github.grantwest.eventually.EventuallyLambdaMatcher.eventuallyEval;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(GGExtension.class)
@@ -113,9 +93,8 @@ public class LambdaDeploymentE2ETest extends BaseE2ETestCase {
 
         initKernel();
 
-        ComponentRecipe componentRecipe = DeploymentService.parseFile(e2eTestPkgStoreDir.resolve("recipes/aws.greengrass.Nucleus-2.4.99.yaml"));
         kernel.getConfig().lookup(SERVICES_NAMESPACE_TOPIC, DEFAULT_NUCLEUS_COMPONENT_NAME,
-                VERSION_CONFIG_KEY).withNewerValue(Topic.DEFAULT_VALUE_TIMESTAMP + 1, NUCLEUS_VERSION);
+                VERSION_CONFIG_KEY).withNewerValue(DEFAULT_VALUE_TIMESTAMP + 1, NUCLEUS_VERSION);
         kernel.getConfig().lookup(SETENV_CONFIG_NAMESPACE, GGC_VERSION_ENV).dflt(NUCLEUS_VERSION);
 
 

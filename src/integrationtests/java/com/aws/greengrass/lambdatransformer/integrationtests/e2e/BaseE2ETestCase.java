@@ -5,17 +5,13 @@
 
 package com.aws.greengrass.lambdatransformer.integrationtests.e2e;
 
-import com.aws.greengrass.componentmanager.exceptions.PackageLoadingException;
-import com.aws.greengrass.componentmanager.exceptions.PackagingException;
 import com.aws.greengrass.componentmanager.models.ComponentIdentifier;
 import com.aws.greengrass.deployment.DeviceConfiguration;
 import com.aws.greengrass.deployment.exceptions.DeviceConfigurationException;
 import com.aws.greengrass.easysetup.DeviceProvisioningHelper;
 import com.aws.greengrass.integrationtests.e2e.helper.ComponentServiceTestHelper;
 import com.aws.greengrass.integrationtests.e2e.util.IotJobsUtils;
-import com.aws.greengrass.lifecyclemanager.GreengrassService;
 import com.aws.greengrass.lifecyclemanager.Kernel;
-import com.aws.greengrass.lifecyclemanager.exceptions.ServiceLoadException;
 import com.aws.greengrass.logging.api.Logger;
 import com.aws.greengrass.logging.impl.LogManager;
 import com.aws.greengrass.tes.CredentialRequestHandler;
@@ -35,62 +31,28 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.io.TempDir;
-import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.greengrassv2.GreengrassV2Client;
-import software.amazon.awssdk.services.greengrassv2.model.CancelDeploymentRequest;
-import software.amazon.awssdk.services.greengrassv2.model.ComponentDeploymentSpecification;
-import software.amazon.awssdk.services.greengrassv2.model.CreateComponentVersionResponse;
-import software.amazon.awssdk.services.greengrassv2.model.CreateDeploymentRequest;
-import software.amazon.awssdk.services.greengrassv2.model.CreateDeploymentResponse;
-import software.amazon.awssdk.services.greengrassv2.model.DeleteCoreDeviceRequest;
-import software.amazon.awssdk.services.greengrassv2.model.DeploymentComponentUpdatePolicy;
-import software.amazon.awssdk.services.greengrassv2.model.DeploymentConfigurationValidationPolicy;
-import software.amazon.awssdk.services.greengrassv2.model.DeploymentPolicies;
-import software.amazon.awssdk.services.greengrassv2.model.ResourceNotFoundException;
+import software.amazon.awssdk.services.greengrassv2.model.*;
 import software.amazon.awssdk.services.iam.IamClient;
 import software.amazon.awssdk.services.iot.IotClient;
 import software.amazon.awssdk.services.iot.model.CreateThingGroupResponse;
 import software.amazon.awssdk.services.iot.model.DeleteConflictException;
 import software.amazon.awssdk.services.iot.model.InvalidRequestException;
-import software.amazon.awssdk.services.iot.model.ResourceAlreadyExistsException;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.BucketAlreadyExistsException;
-import software.amazon.awssdk.services.s3.model.BucketAlreadyOwnedByYouException;
-import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
-import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
-import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Exception;
-import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import static com.aws.greengrass.componentmanager.KernelConfigResolver.CONFIGURATION_CONFIG_KEY;
 import static com.aws.greengrass.lifecyclemanager.GreengrassService.SERVICES_NAMESPACE_TOPIC;
 import static com.aws.greengrass.testcommons.testutilities.ExceptionLogProtector.ignoreExceptionUltimateCauseWithMessageSubstring;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static software.amazon.awssdk.services.greengrassv2.model.DeploymentComponentUpdatePolicyAction.NOTIFY_COMPONENTS;
 import static software.amazon.awssdk.services.greengrassv2.model.DeploymentFailureHandlingPolicy.DO_NOTHING;
 
@@ -247,109 +209,6 @@ public class BaseE2ETestCase implements AutoCloseable {
         FileUtils.copyDirectory(localStoreContentPath.toFile(), e2eTestPkgStoreDir.toFile());
     }
 
-    /**
-     * Load recipes from local store and publish components to CMS.
-     * Directory tree layout should follow the local component store. e.g.
-     * src/integrationtests/resources/com/aws/greengrass/integrationtests/e2e
-     * └── local_store_content
-     *     ├── artifacts
-     *     │  └── KernelIntegTest
-     *     │      └── 1.0.0
-     *     │          └── kernel_integ_test_artifact.txt
-     *     └── recipes
-     *         ├── KernelIntegTest-1.0.0.yaml
-     *         └── KernelIntegTestDependency-1.0.0.yaml
-     */
-    private static void uploadTestComponentsToCms(ComponentIdentifier... pkgIds)
-            throws IOException, PackagingException, InterruptedException {
-        List<String> errors = new ArrayList<>();
-        for (ComponentIdentifier pkgId : pkgIds) {
-            try {
-                // GCS createComponentVersion requests have to be made with <=1TPS
-                Thread.sleep(1_000);
-                draftComponent(pkgId);
-            } catch (ResourceAlreadyExistsException e) {
-                // Don't fail the test if the component exists
-                errors.add(e.getMessage());
-            }
-        }
-        if (!errors.isEmpty()) {
-            logger.atWarn().kv("errors", errors).log("Ignore errors if a component already exists");
-        }
-    }
-
-    private static ComponentIdentifier getLocalPackageIdentifier(ComponentIdentifier pkgIdCloud) {
-        return new ComponentIdentifier(removeTestComponentNameCloudSuffix(pkgIdCloud.getName()),
-                pkgIdCloud.getVersion());
-    }
-
-    private static void draftComponent(ComponentIdentifier pkgIdCloud) throws IOException, PackageLoadingException {
-        ComponentIdentifier pkgIdLocal = getLocalPackageIdentifier(pkgIdCloud);
-        Path testRecipePath = e2eTestPkgStoreDir.resolve("recipes").resolve(getTestRecipeFileName(pkgIdLocal));
-
-        // update recipe
-        String content = new String(Files.readAllBytes(testRecipePath), StandardCharsets.UTF_8);
-        Set<String> componentNameSet = Arrays.stream(componentsWithArtifactsInS3).map(ComponentIdentifier::getName)
-                .collect(Collectors.toSet());
-
-        for (String cloudPkgName : componentNameSet) {
-            String localPkgName = removeTestComponentNameCloudSuffix(cloudPkgName);
-            content = content.replaceAll("\\{\\{" + localPkgName + "}}", cloudPkgName);
-            content = content.replaceAll("\\{\\{" + TEST_COMPONENT_ARTIFACTS_S3_BUCKET_PREFIX + "}}",
-                    TEST_COMPONENT_ARTIFACTS_S3_BUCKET);
-        }
-
-        testRecipePath = e2eTestPkgStoreDir.resolve("recipes").resolve(getTestRecipeFileName(pkgIdCloud));
-
-        Files.write(testRecipePath, content.getBytes(StandardCharsets.UTF_8));
-
-        CreateComponentVersionResponse createComponentResult =
-                ComponentServiceTestHelper.createComponent(greengrassClient, testRecipePath);
-        componentArns.put(pkgIdCloud, createComponentResult.arn());
-        assertEquals(pkgIdCloud.getName(), createComponentResult.componentName(), createComponentResult.toString());
-        assertEquals(pkgIdCloud.getVersion().toString(), createComponentResult.componentVersion());
-    }
-
-    private static String getTestRecipeFileName(ComponentIdentifier componentIdentifier) {
-        // naming convention under 'component_resources/recipes/'
-        return String.format("%s-%s.yaml", componentIdentifier.getName(), componentIdentifier.getVersion());
-    }
-
-    private static void createS3BucketsForTestComponentArtifacts() {
-        try {
-            s3Client.createBucket(CreateBucketRequest.builder().bucket(TEST_COMPONENT_ARTIFACTS_S3_BUCKET).build());
-        } catch (BucketAlreadyExistsException e) {
-            logger.atError().setCause(e).log("Bucket name is taken, please retry the tests");
-        } catch (BucketAlreadyOwnedByYouException e) {
-            // No-op if bucket exists
-        }
-    }
-
-    private static void uploadComponentArtifactToS3(ComponentIdentifier... pkgIds) {
-        for (ComponentIdentifier pkgId : pkgIds) {
-            ComponentIdentifier pkgIdLocal = getLocalPackageIdentifier(pkgId);
-            Path artifactDirPath = e2eTestPkgStoreDir.resolve("artifacts").resolve(pkgIdLocal.getName())
-                    .resolve(pkgIdLocal.getVersion().toString());
-            File[] artifactFiles = artifactDirPath.toFile().listFiles();
-            if (artifactFiles == null) {
-                logger.atInfo().kv("component", pkgIdLocal).kv("artifactPath", artifactDirPath.toAbsolutePath())
-                        .log("Skip artifact upload. No artifacts found");
-            } else {
-                for (File artifact : artifactFiles) {
-                    try {
-                        // Path is <bucket>/<component_name>-<component>_<component_version>/<filename>
-                        s3Client.putObject(PutObjectRequest.builder().bucket(TEST_COMPONENT_ARTIFACTS_S3_BUCKET)
-                                .key(pkgIdLocal.getName() + "-" + pkgIdLocal.getVersion().toString() + "/" + artifact
-                                        .getName()).build(), RequestBody.fromFile(artifact));
-                    } catch (S3Exception e) {
-                        logger.atError().setCause(e).log("Could not upload artifacts to S3");
-                    }
-                }
-            }
-
-        }
-    }
-
     private static void cleanUpTestComponentArtifactsFromS3() {
         try {
             ListObjectsResponse objectsInArtifactsBucket = s3Client.listObjects(
@@ -440,11 +299,6 @@ public class BaseE2ETestCase implements AutoCloseable {
                 CONFIGURATION_CONFIG_KEY, key).withValue(value);
     }
 
-    protected static void setDeviceConfig(Kernel kernel, String key, String value) {
-        kernel.getConfig().lookup(SERVICES_NAMESPACE_TOPIC, DeviceConfiguration.DEFAULT_NUCLEUS_COMPONENT_NAME,
-                CONFIGURATION_CONFIG_KEY, key).withValue(value);
-    }
-
     @Override
     public void close() {
         greengrassClient.close();
@@ -462,18 +316,6 @@ public class BaseE2ETestCase implements AutoCloseable {
             return name;
         }
         return name + testComponentSuffix;
-    }
-
-    protected static String removeTestComponentNameCloudSuffix(String name) {
-        int index = name.lastIndexOf(testComponentSuffix);
-        if (index > 0) {
-            return name.substring(0, index);
-        }
-        return name;
-    }
-
-    public GreengrassService getCloudDeployedComponent(String name) throws ServiceLoadException {
-        return kernel.locate(getTestComponentNameInCloud(name));
     }
 
 }

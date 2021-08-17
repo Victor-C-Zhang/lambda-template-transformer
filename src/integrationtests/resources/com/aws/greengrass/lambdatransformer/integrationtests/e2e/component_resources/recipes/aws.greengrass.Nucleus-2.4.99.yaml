@@ -26,46 +26,8 @@ ComponentConfiguration:
 Manifests:
   - Platform:
       os: linux
-    Lifecycle:
-      bootstrap:
-        requiresPrivilege: 'true'
-        script: |2-
-
-          set -eu
-          KERNEL_ROOT="{kernel:rootPath}"
-          UNPACK_DIR="{artifacts:decompressedPath}/aws.greengrass.nucleus"
-          rm -r "$KERNEL_ROOT"/alts/current/*
-          echo "{configuration:/jvmOptions}" > "$KERNEL_ROOT/alts/current/launch.params"
-          ln -sf "$UNPACK_DIR" "$KERNEL_ROOT/alts/current/distro"
-          exit 100
-    Artifacts:
-      - Uri: greengrass:HCyyG8Cx4n8V1C4NFcHgGkRyDUtXi2-UPxTHeIQU11Y=/aws.greengrass.nucleus.zip
-        Digest: UrBBax/d/WOwi5AlhC3ZSp2R1oz5V0RwurIUtC7EKfw=
-        Algorithm: SHA-256
-        Unarchive: ZIP
-        Permission:
-          Read: ALL
-          Execute: ALL
+    Lifecycle: {}
   - Platform:
       os: darwin
-    Lifecycle:
-      bootstrap:
-        requiresPrivilege: 'true'
-        script: |2-
-
-          set -eu
-          KERNEL_ROOT="{kernel:rootPath}"
-          UNPACK_DIR="{artifacts:decompressedPath}/aws.greengrass.nucleus"
-          rm -r "$KERNEL_ROOT"/alts/current/*
-          echo "{configuration:/jvmOptions}" > "$KERNEL_ROOT/alts/current/launch.params"
-          ln -sf "$UNPACK_DIR" "$KERNEL_ROOT/alts/current/distro"
-          exit 100
-    Artifacts:
-      - Uri: greengrass:HCyyG8Cx4n8V1C4NFcHgGkRyDUtXi2-UPxTHeIQU11Y=/aws.greengrass.nucleus.zip
-        Digest: UrBBax/d/WOwi5AlhC3ZSp2R1oz5V0RwurIUtC7EKfw=
-        Algorithm: SHA-256
-        Unarchive: ZIP
-        Permission:
-          Read: ALL
-          Execute: ALL
+    Lifecycle: {}
 Lifecycle: {}

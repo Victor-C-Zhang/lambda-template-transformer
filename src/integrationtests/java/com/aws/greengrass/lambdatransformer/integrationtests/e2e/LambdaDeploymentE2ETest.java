@@ -5,10 +5,16 @@
 
 package com.aws.greengrass.lambdatransformer.integrationtests.e2e;
 
+import com.amazon.aws.iot.greengrass.component.common.ComponentRecipe;
+import com.amazon.aws.iot.greengrass.component.common.DependencyProperties;
+import com.aws.greengrass.componentmanager.ComponentStore;
 import com.aws.greengrass.componentmanager.KernelConfigResolver;
+import com.aws.greengrass.componentmanager.models.ComponentIdentifier;
 import com.aws.greengrass.config.Topic;
+import com.aws.greengrass.config.Topics;
 import com.aws.greengrass.dependency.State;
 import com.aws.greengrass.deployment.DeploymentQueue;
+import com.aws.greengrass.deployment.DeploymentService;
 import com.aws.greengrass.deployment.DeploymentStatusKeeper;
 import com.aws.greengrass.deployment.DeviceConfiguration;
 import com.aws.greengrass.deployment.model.ConfigurationUpdateOperation;
@@ -22,6 +28,7 @@ import com.aws.greengrass.util.Utils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vdurmont.semver4j.Semver;
 import org.hamcrest.collection.IsMapContaining;
 import org.hamcrest.collection.IsMapWithSize;
 import org.junit.jupiter.api.AfterEach;
@@ -58,12 +65,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.aws.greengrass.componentmanager.KernelConfigResolver.VERSION_CONFIG_KEY;
+import static com.aws.greengrass.config.Topic.DEFAULT_VALUE_TIMESTAMP;
 import static com.aws.greengrass.deployment.DeploymentStatusKeeper.DEPLOYMENT_ID_KEY_NAME;
 import static com.aws.greengrass.deployment.DeploymentStatusKeeper.DEPLOYMENT_STATUS_KEY_NAME;
 import static com.aws.greengrass.deployment.DeviceConfiguration.DEFAULT_NUCLEUS_COMPONENT_NAME;
 import static com.aws.greengrass.deployment.DeviceConfiguration.GGC_VERSION_ENV;
-import static com.aws.greengrass.lifecyclemanager.GreengrassService.SERVICES_NAMESPACE_TOPIC;
-import static com.aws.greengrass.lifecyclemanager.GreengrassService.SETENV_CONFIG_NAMESPACE;
+import static com.aws.greengrass.lifecyclemanager.GreengrassService.*;
+import static com.aws.greengrass.lifecyclemanager.GreengrassService.SERVICE_LIFECYCLE_NAMESPACE_TOPIC;
 import static com.aws.greengrass.testcommons.testutilities.ExceptionLogProtector.ignoreExceptionOfType;
 import static com.aws.greengrass.testcommons.testutilities.ExceptionLogProtector.ignoreExceptionUltimateCauseWithMessageSubstring;
 import static com.github.grantwest.eventually.EventuallyLambdaMatcher.eventuallyEval;
@@ -79,6 +87,7 @@ public class LambdaDeploymentE2ETest extends BaseE2ETestCase {
     private static final ObjectMapper OBJECT_MAPPER =
             new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
     private static final String NUCLEUS_VERSION = "2.4.99";
+    private static final String NUCLEUS_NAME = "aws.greengrass.Nucleus";
 
     CountDownLatch stdoutCountdown;
     private Path localStoreContentPath;
@@ -103,9 +112,21 @@ public class LambdaDeploymentE2ETest extends BaseE2ETestCase {
         ignoreExceptionUltimateCauseWithMessageSubstring(context, "Unable to locate the unpack directory of Nucleus artifacts");
 
         initKernel();
+
+        ComponentRecipe componentRecipe = DeploymentService.parseFile(e2eTestPkgStoreDir.resolve("recipes/aws.greengrass.Nucleus-2.4.99.yaml"));
         kernel.getConfig().lookup(SERVICES_NAMESPACE_TOPIC, DEFAULT_NUCLEUS_COMPONENT_NAME,
                 VERSION_CONFIG_KEY).withNewerValue(Topic.DEFAULT_VALUE_TIMESTAMP + 1, NUCLEUS_VERSION);
         kernel.getConfig().lookup(SETENV_CONFIG_NAMESPACE, GGC_VERSION_ENV).dflt(NUCLEUS_VERSION);
+
+
+        // Copy recipe to component store
+        ComponentStore componentStore = kernel.getContext().get(ComponentStore.class);
+        ComponentIdentifier componentIdentifier = new ComponentIdentifier(NUCLEUS_NAME, new Semver(NUCLEUS_VERSION));
+        Path destinationRecipePath = componentStore.resolveRecipePath(componentIdentifier);
+        if (!Files.exists(destinationRecipePath)) {
+            DeploymentService.copyRecipeFileToComponentStore(componentStore,
+                    e2eTestPkgStoreDir.resolve("recipes/aws.greengrass.Nucleus-2.4.99.yaml"), logger);
+        }
 
         kernel.launch();
 
@@ -151,13 +172,16 @@ public class LambdaDeploymentE2ETest extends BaseE2ETestCase {
             stdoutCountdown = new CountDownLatch(1);
             // 1st Deployment to have some services running in Kernel with default configuration
             CreateDeploymentRequest createDeployment1 = CreateDeploymentRequest.builder().components(
-                    Utils.immutableMap("FakeLambda",
-                            ComponentDeploymentSpecification.builder().componentVersion("1.0.0").build())).build();
+                    Utils.immutableMap("aws.greengrass.Nucleus",
+                            ComponentDeploymentSpecification.builder().componentVersion(NUCLEUS_VERSION).build() ,
+                            "FakeLambda",
+                            ComponentDeploymentSpecification.builder().componentVersion("1.0.0").build()))
+                    .build();
 
             CreateDeploymentResponse createDeploymentResult1 = draftAndCreateDeployment(createDeployment1);
 
             IotJobsUtils.waitForJobExecutionStatusToSatisfy(iotClient, createDeploymentResult1.iotJobId(),
-                    thingInfo.getThingName(), Duration.ofMinutes(1), s -> s.equals(JobExecutionStatus.SUCCEEDED));
+                    thingInfo.getThingName(), Duration.ofMinutes(2), s -> s.equals(JobExecutionStatus.SUCCEEDED));
         }
 
         String recipeDir = localStoreContentPath.resolve("recipes").toAbsolutePath().toString();

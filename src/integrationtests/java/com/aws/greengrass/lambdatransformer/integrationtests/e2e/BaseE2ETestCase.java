@@ -458,7 +458,7 @@ public class BaseE2ETestCase implements AutoCloseable {
     }
 
     public static String getTestComponentNameInCloud(String name) {
-        if (name.endsWith(testComponentSuffix) || name.contains("FakeLambda")) {
+        if (name.endsWith(testComponentSuffix) || name.contains("FakeLambda") || name.contains("Nucleus")) {
             return name;
         }
         return name + testComponentSuffix;

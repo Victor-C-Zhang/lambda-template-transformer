@@ -151,8 +151,8 @@ public class LambdaDeploymentE2ETest extends BaseE2ETestCase {
             stdoutCountdown = new CountDownLatch(1);
             // 1st Deployment to have some services running in Kernel with default configuration
             CreateDeploymentRequest createDeployment1 = CreateDeploymentRequest.builder().components(
-                    Utils.immutableMap("aws.greengrass.Nucleus",
-                            ComponentDeploymentSpecification.builder().componentVersion(NUCLEUS_VERSION).build() ,
+                    Utils.immutableMap(NUCLEUS_NAME,
+                            ComponentDeploymentSpecification.builder().componentVersion(NUCLEUS_VERSION).build(),
                             "FakeLambda",
                             ComponentDeploymentSpecification.builder().componentVersion("1.0.0").build()))
                     .build();
@@ -167,6 +167,7 @@ public class LambdaDeploymentE2ETest extends BaseE2ETestCase {
         String artifactsDir = localStoreContentPath.resolve("artifacts").toAbsolutePath().toString();
 
         Map<String, String> componentsToMerge = new HashMap<>();
+        componentsToMerge.put(NUCLEUS_NAME, NUCLEUS_VERSION);
         componentsToMerge.put("LambdaA", "1.0.0");
 
         Map<String, ConfigurationUpdateOperation> updateConfig = new HashMap<>();

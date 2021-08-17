@@ -23,7 +23,6 @@ import com.aws.greengrass.util.RegionUtils;
 import com.aws.greengrass.util.Utils;
 import com.aws.greengrass.util.platforms.Platform;
 import com.aws.greengrass.util.platforms.unix.DarwinPlatform;
-import com.vdurmont.semver4j.Semver;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -127,8 +126,7 @@ public class BaseE2ETestCase implements AutoCloseable {
     protected static final IamClient iamClient = IamSdkClientFactory.getIamClient(GAMMA_REGION.toString());
     protected static final S3Client s3Client = S3Client.builder().region(GAMMA_REGION).build();
 
-    private static final ComponentIdentifier[] componentsWithArtifactsInS3 =
-            {createPackageIdentifier("FakeLambda", new Semver("1.0.0"))};
+    private static final ComponentIdentifier[] componentsWithArtifactsInS3 = {};
 
     private static final Map<ComponentIdentifier, String> componentArns = new HashMap<>();
 
@@ -305,10 +303,6 @@ public class BaseE2ETestCase implements AutoCloseable {
         iotClient.close();
         iamClient.close();
         s3Client.close();
-    }
-
-    private static ComponentIdentifier createPackageIdentifier(String name, Semver version) {
-        return new ComponentIdentifier(getTestComponentNameInCloud(name), version);
     }
 
     public static String getTestComponentNameInCloud(String name) {

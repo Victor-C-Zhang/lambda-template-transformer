@@ -359,6 +359,64 @@
                             <outputDirectory>target/jacoco-report/jacoco-it</outputDirectory>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>jacoco-check-unit-test</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/jacoco.exec</dataFile>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+<!--                                    <limits>-->
+<!--                                        <limit>-->
+<!--                                            <counter>INSTRUCTION</counter>-->
+<!--                                            <value>COVEREDRATIO</value>-->
+<!--                                            <minimum>0.88</minimum>-->
+<!--                                        </limit>-->
+<!--                                        <limit>-->
+<!--                                            <counter>BRANCH</counter>-->
+<!--                                            <value>COVEREDRATIO</value>-->
+<!--                                            <minimum>0.76</minimum>-->
+<!--                                        </limit>-->
+<!--                                    </limits>-->
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jacoco-check-integration-test</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/jacoco-it.exec</dataFile>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+<!--                                    <limits>-->
+<!--                                        <limit>-->
+<!--                                            <counter>INSTRUCTION</counter>-->
+<!--                                            <value>COVEREDRATIO</value>-->
+<!--                                            <minimum>0.55</minimum>-->
+<!--                                        </limit>-->
+<!--                                        <limit>-->
+<!--                                            <counter>BRANCH</counter>-->
+<!--                                            <value>COVEREDRATIO</value>-->
+<!--                                            <minimum>0.46</minimum>-->
+<!--                                        </limit>-->
+<!--                                    </limits>-->
+                                </rule>
+                            </rules>
+                            <excludes>
+                                <!-- exclude sync until feature complete and we can add integ tests -->
+                                <exclude>**/com/aws/greengrass/shadowmanager/sync/*</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>

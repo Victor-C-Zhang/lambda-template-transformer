@@ -52,7 +52,6 @@ import static com.aws.greengrass.testcommons.testutilities.ExceptionLogProtector
 import static com.aws.greengrass.testcommons.testutilities.ExceptionLogProtector.ignoreExceptionUltimateCauseWithMessageSubstring;
 import static com.aws.greengrass.util.Utils.copyFolderRecursively;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith({MockitoExtension.class, GGExtension.class})
@@ -139,7 +138,7 @@ public class LambdaTransformerIntegTest extends NucleusLaunchUtils {
 
         submitLocalDocument(request);
 
-        assertFalse(firstDeploymentCDL.await(10, TimeUnit.SECONDS), "Templating deployment did not succeed");
+        assertTrue(firstDeploymentCDL.await(10, TimeUnit.SECONDS), "Templating deployment did not succeed");
     }
 
     private void submitLocalDocument(LocalOverrideRequest request) throws Exception {

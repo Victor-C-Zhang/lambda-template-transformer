@@ -63,8 +63,7 @@ public class LambdaTransformerTest {
                 .templateParameters(templateParams)
                 .build();
 
-        ComponentRecipe generated = new LambdaTransformer().transform(paramFile,
-                OBJECT_MAPPER.readTree(OBJECT_MAPPER.writeValueAsString(params)));
+        ComponentRecipe generated = new LambdaTransformer().transform(paramFile, params);
 
         verifyGeneratedComponentRecipe(generated, TestData.COMPONENT_NAME_1, new Semver(TestData.COMPONENT_VERSION_STR_1), params);
     }
@@ -104,8 +103,7 @@ public class LambdaTransformerTest {
                 .templateParameters(templateParams)
                 .build();
 
-        ComponentRecipe generated = new LambdaTransformer().transform(paramFile,
-                OBJECT_MAPPER.readTree(OBJECT_MAPPER.writeValueAsString(params)));
+        ComponentRecipe generated = new LambdaTransformer().transform(paramFile, params);
 
         verifyGeneratedComponentRecipe(generated, TestData.COMPONENT_NAME_1, new Semver(TestData.COMPONENT_VERSION_STR_1), params);
     }
@@ -131,8 +129,7 @@ public class LambdaTransformerTest {
                 .build();
 
         final RecipeTransformerException ex = assertThrows(RecipeTransformerException.class,
-                () -> new LambdaTransformer().transform(paramFile,
-                        OBJECT_MAPPER.readTree(OBJECT_MAPPER.writeValueAsString(params)))
+                () -> new LambdaTransformer().transform(paramFile, params)
         );
         assertThat(ex.getMessage(), CoreMatchers.containsString("At least one platform is expected to be set by caller"));
     }
@@ -162,8 +159,7 @@ public class LambdaTransformerTest {
         assertThat(shutdownMap, hasEntry("requiresPrivilege", true));
         assertThat(shutdownMap, hasEntry(equalTo("script"), notNullValue()));
 
-        // 3 for injected dependencies
-        assertEquals(recipe.getComponentDependencies().size(), params.getComponentDependencies().size() + 3);
+        assertEquals(recipe.getComponentDependencies().size(), params.getComponentDependencies().size());
 
         assertNotNull(recipe.getComponentConfiguration().getDefaultConfiguration());
         assertNotEquals(recipe.getComponentConfiguration().getDefaultConfiguration().size(), 0);

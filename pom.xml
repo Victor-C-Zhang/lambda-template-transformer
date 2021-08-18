@@ -506,7 +506,7 @@
                             <classifier>packed</classifier>
                             <finalName>transformer</finalName>
                             <outputDirectory>
-                                src/integrationtests/resources/com/aws/greengrass/lambdatransformer/integrationtests/artifacts/LambdaTemplate/1.0.0
+                                src/integrationtests/resources/com/aws/greengrass/lambdatransformer/integrationtests/e2e/component_resources/artifacts/LambdaTemplate/1.0.0
                             </outputDirectory>
                         </configuration>
                     </execution>

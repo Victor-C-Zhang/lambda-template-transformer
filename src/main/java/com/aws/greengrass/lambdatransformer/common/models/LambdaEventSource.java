@@ -5,7 +5,6 @@
 
 package com.aws.greengrass.lambdatransformer.common.models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,9 +19,7 @@ public class LambdaEventSource {
     private LambdaEventSourceType type;
 
     private enum LambdaEventSourceType {
-        @JsonProperty("pubsub")
-        PUBSUB,
-        @JsonProperty("iotcore")
+        PUB_SUB,
         IOT_CORE,
     }
 }

@@ -61,26 +61,26 @@ ComponentDependencies:
     VersionRequirement: ">=2.0.0 <3.0.0"
     DependencyType: "HARD"
 Manifests:
-  - Platform:
-      os: "linux"
-      architecture: "amd64"
-    Lifecycle: {}
-    Artifacts:
-      - Uri: "greengrass:lambda-artifact.zip"
-        Unarchive: "ZIP"
-        Permission:
-          Read: "OWNER"
-          Execute: "NONE"
-  - Platform:
-      os: "darwin"
-      architecture: "amd64"
-    Lifecycle: {}
-    Artifacts:
-      - Uri: "greengrass:lambda-artifact.zip"
-        Unarchive: "ZIP"
-        Permission:
-          Read: "OWNER"
-          Execute: "NONE"
+- Platform:
+    os: "linux"
+    architecture: "amd64"
+  Lifecycle: {}
+  Artifacts:
+  - Uri: "greengrass:lambda-artifact.zip"
+    Unarchive: "ZIP"
+    Permission:
+      Read: "OWNER"
+      Execute: "NONE"
+- Platform:
+    os: "darwin"
+    architecture: "amd64"
+  Lifecycle: {}
+  Artifacts:
+  - Uri: "greengrass:lambda-artifact.zip"
+    Unarchive: "ZIP"
+    Permission:
+      Read: "OWNER"
+      Execute: "NONE"
 Lifecycle:
   startup:
     requiresPrivilege: true

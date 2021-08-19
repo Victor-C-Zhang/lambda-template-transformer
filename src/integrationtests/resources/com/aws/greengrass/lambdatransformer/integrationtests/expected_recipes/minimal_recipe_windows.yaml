@@ -33,15 +33,15 @@ ComponentDependencies:
     VersionRequirement: ">=2.0.0 <3.0.0"
     DependencyType: "HARD"
 Manifests:
-  - Platform:
-      os: "*"
-    Lifecycle: {}
-    Artifacts:
-      - Uri: "greengrass:lambda-artifact.zip"
-        Unarchive: "ZIP"
-        Permission:
-          Read: "OWNER"
-          Execute: "NONE"
+- Platform:
+    os: "*"
+  Lifecycle: {}
+  Artifacts:
+  - Uri: "greengrass:lambda-artifact.zip"
+    Unarchive: "ZIP"
+    Permission:
+      Read: "OWNER"
+      Execute: "NONE"
 Lifecycle:
   startup:
     requiresPrivilege: true

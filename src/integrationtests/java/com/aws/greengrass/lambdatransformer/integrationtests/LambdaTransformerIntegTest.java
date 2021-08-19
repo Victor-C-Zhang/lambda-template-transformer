@@ -71,7 +71,12 @@ public class LambdaTransformerIntegTest extends NucleusLaunchUtils {
             ComponentIdentifier expectedIdentifier = new ComponentIdentifier("python-listener", new Semver("1.0.0"));
             assertEquals(expectedIdentifier, identifier);
             String actualRecipeString = i.getArgument(1);
-            Path expectedFile = Paths.get(getClass().getResource("expected_recipes/minimal_recipe.yaml").toURI());
+            Path expectedFile;
+            if (System.getProperty("os.name").contains("Windows")) { // indentation is different on Windows... for some reason
+                expectedFile = Paths.get(getClass().getResource("expected_recipes/minimal_recipe_windows.yaml").toURI());
+            } else {
+                expectedFile = Paths.get(getClass().getResource("expected_recipes/minimal_recipe.yaml").toURI());
+            }
             String expectedRecipeString = new String(Files.readAllBytes(expectedFile));
             assertEquals(expectedRecipeString, actualRecipeString);
             return null;
@@ -88,7 +93,12 @@ public class LambdaTransformerIntegTest extends NucleusLaunchUtils {
             ComponentIdentifier identifier = i.getArgument(0);
             ComponentIdentifier expectedIdentifier = new ComponentIdentifier("cloud-hello", new Semver("3.2.1"));
             assertEquals(expectedIdentifier, identifier);String actualRecipeString = i.getArgument(1);
-            Path expectedFile = Paths.get(getClass().getResource("expected_recipes/full_recipe.yaml").toURI());
+            Path expectedFile;
+            if (System.getProperty("os.name").contains("Windows")) { // indentation is different on Windows... for some reason
+                expectedFile = Paths.get(getClass().getResource("expected_recipes/full_recipe_windows.yaml").toURI());
+            } else {
+                expectedFile = Paths.get(getClass().getResource("expected_recipes/full_recipe.yaml").toURI());
+            }
             String expectedRecipeString = new String(Files.readAllBytes(expectedFile));
             assertEquals(expectedRecipeString, actualRecipeString);
             return null;

@@ -43,10 +43,10 @@ templateParameterSchema:
     type: "object"
     required: false
     defaultValue:
-      memorySizeInKB: 16384
-      mountROSysfs: true
+      mountROSysfs: false
       volumes: [ ]
       devices: [ ]
+      memorySize: 16000
   timeoutInSeconds:
     type: "number"
     required: false

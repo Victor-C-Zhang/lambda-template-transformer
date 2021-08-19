@@ -1,0 +1,12 @@
+---
+RecipeFormatVersion: '2020-01-25'
+ComponentName: python-listener
+ComponentVersion: 1.0.0
+ComponentType: aws.greengrass.generic
+ComponentDependencies:
+  LambdaTemplate:
+    VersionRequirement: '1.0.0'
+TemplateParameters:
+  lambdaArn: arn:aws:lambda:us-west-2:958094261904:function:python-listener:1
+  lambdaHandler: lambda_function.lambda_handler
+  lambdaRuntime: python3.8

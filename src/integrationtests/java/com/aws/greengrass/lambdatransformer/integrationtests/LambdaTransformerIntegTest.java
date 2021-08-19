@@ -50,7 +50,7 @@ public class LambdaTransformerIntegTest extends NucleusLaunchUtils {
         Path artifactsDir = Paths.get(LambdaTransformerIntegTest.class.getResource("artifacts").toURI());
         try (Stream<Path> files = Files.walk(artifactsDir)) {
             for (Path r : files.collect(Collectors.toList())) {
-                if (!r.toFile().isDirectory() && "transformer-packed.jar".equals(r.getFileName().toString())) {
+                if (!r.toFile().isDirectory() && "transformer-integ.jar".equals(r.getFileName().toString())) {
                     Files.move(r, r.resolveSibling("transformer.jar"), REPLACE_EXISTING);
                 }
             }

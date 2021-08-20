@@ -74,7 +74,14 @@ public class LambdaTransformerIntegTest extends NucleusLaunchUtils {
             Path expectedFile = Paths.get(getClass().getResource("expected_recipes/minimal_recipe.yaml").toURI());
             String expectedRecipeString = new String(Files.readAllBytes(expectedFile));
             if (System.getProperty("os.name").contains("Windows")) {
-                actualRecipeString = actualRecipeString.replace("\n", "\r\n");
+                expectedRecipeString = expectedRecipeString.replace("\r\n", "\n");
+                /* This is necessary for Windows line feed compatibility. In particular, this is necessary because of
+                how git deals with line feeds (more accurately, the way git for Windows deals with line feeds). By
+                default, when git for Windows pulls repos, it replaces Unix-style LF line feeds with Windows-style
+                CRLF. But internally, Jackson and/or Java uses LF line feeds, so we need to reconcile these differences.
+                If at any point the default for git for Windows changes, this code will be unnecessary but the build
+                will not break.
+                 */
             }
             assertEquals(expectedRecipeString, actualRecipeString);
             return null;
@@ -94,7 +101,7 @@ public class LambdaTransformerIntegTest extends NucleusLaunchUtils {
             Path expectedFile = Paths.get(getClass().getResource("expected_recipes/full_recipe.yaml").toURI());
             String expectedRecipeString = new String(Files.readAllBytes(expectedFile));
             if (System.getProperty("os.name").contains("Windows")) {
-                actualRecipeString = actualRecipeString.replace("\n", "\r\n");
+                expectedRecipeString = expectedRecipeString.replace("\r\n", "\n");
             }
             assertEquals(expectedRecipeString, actualRecipeString);
             return null;

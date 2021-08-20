@@ -74,7 +74,7 @@ public class LambdaTransformerIntegTest extends NucleusLaunchUtils {
             Path expectedFile = Paths.get(getClass().getResource("expected_recipes/minimal_recipe.yaml").toURI());
             String expectedRecipeString = new String(Files.readAllBytes(expectedFile));
             if (System.getProperty("os.name").contains("Windows")) {
-                expectedRecipeString = expectedRecipeString.replace("\n", "\r\n");
+                actualRecipeString = actualRecipeString.replace("\n", "\r\n");
             }
             assertEquals(expectedRecipeString, actualRecipeString);
             return null;
@@ -94,7 +94,7 @@ public class LambdaTransformerIntegTest extends NucleusLaunchUtils {
             Path expectedFile = Paths.get(getClass().getResource("expected_recipes/full_recipe.yaml").toURI());
             String expectedRecipeString = new String(Files.readAllBytes(expectedFile));
             if (System.getProperty("os.name").contains("Windows")) {
-                expectedRecipeString = expectedRecipeString.replace("\n", "\r\n");
+                actualRecipeString = actualRecipeString.replace("\n", "\r\n");
             }
             assertEquals(expectedRecipeString, actualRecipeString);
             return null;

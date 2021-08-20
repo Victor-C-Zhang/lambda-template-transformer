@@ -5,6 +5,7 @@
 
 package com.aws.greengrass.lambdatransformer.common.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,11 +22,12 @@ import static com.aws.greengrass.lambdatransformer.common.Constants.LAMBDA_RECIP
 @AllArgsConstructor
 public class TemplateContainerParams {
 
+    @JsonProperty("memorySize")
     @Builder.Default
     private Integer memorySizeInKB = LAMBDA_RECIPE_DEFAULT_LAMBDA_MEMORY_IN_KILO_BYTES;
 
     @Builder.Default
-    private Boolean mountROSysfs = true;
+    private Boolean mountROSysfs = false;
 
     @Builder.Default
     private List<LambdaVolumeMount> volumes = Collections.emptyList();

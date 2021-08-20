@@ -18,8 +18,8 @@ import static com.aws.greengrass.lambdatransformer.common.Constants.DEFAULT_LAMB
 @NoArgsConstructor
 @AllArgsConstructor
 public class LambdaVolumeMount {
-    private String sourcePath;
-    private String destinationPath;
+    private String source;
+    private String destination;
 
     @Builder.Default
     private LambdaFilesystemPermission permission = DEFAULT_LAMBDA_FILE_SYSTEM_PERMISSION;

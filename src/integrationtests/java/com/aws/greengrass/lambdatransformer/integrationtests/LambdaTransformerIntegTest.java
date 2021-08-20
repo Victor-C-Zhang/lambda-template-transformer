@@ -5,113 +5,131 @@
 
 package com.aws.greengrass.lambdatransformer.integrationtests;
 
-import com.aws.greengrass.componentmanager.exceptions.PackageDownloadException;
-import com.aws.greengrass.dependency.State;
-import com.aws.greengrass.deployment.DeploymentDocumentDownloader;
-import com.aws.greengrass.deployment.DeviceConfiguration;
-import com.aws.greengrass.helper.PreloadComponentStoreHelper;
-import com.aws.greengrass.integrationtests.util.ConfigPlatformResolver;
-import com.aws.greengrass.lifecyclemanager.Kernel;
-import com.aws.greengrass.status.FleetStatusService;
+import com.aws.greengrass.componentmanager.ComponentStore;
+import com.aws.greengrass.componentmanager.models.ComponentIdentifier;
+import com.aws.greengrass.dependency.Context;
+import com.aws.greengrass.deployment.templating.TemplateEngine;
+import com.aws.greengrass.deployment.templating.exceptions.RecipeTransformerException;
+import com.aws.greengrass.deployment.templating.exceptions.TemplateParameterException;
 import com.aws.greengrass.testcommons.testutilities.GGExtension;
-import com.aws.greengrass.testcommons.testutilities.NoOpPathOwnershipHandler;
+import com.vdurmont.semver4j.Semver;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import software.amazon.awssdk.core.exception.SdkClientException;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.aws.greengrass.componentmanager.KernelConfigResolver.VERSION_CONFIG_KEY;
-import static com.aws.greengrass.deployment.DeploymentService.DEPLOYMENT_SERVICE_TOPICS;
-import static com.aws.greengrass.deployment.DeviceConfiguration.DEFAULT_NUCLEUS_COMPONENT_NAME;
-import static com.aws.greengrass.deployment.DeviceConfiguration.GGC_VERSION_ENV;
-import static com.aws.greengrass.integrationtests.BaseITCase.setDeviceConfig;
-import static com.aws.greengrass.lifecyclemanager.GreengrassService.SERVICES_NAMESPACE_TOPIC;
-import static com.aws.greengrass.lifecyclemanager.GreengrassService.SETENV_CONFIG_NAMESPACE;
-import static com.aws.greengrass.status.FleetStatusService.FLEET_STATUS_SERVICE_TOPICS;
-import static com.aws.greengrass.testcommons.testutilities.ExceptionLogProtector.ignoreExceptionOfType;
-import static com.aws.greengrass.testcommons.testutilities.ExceptionLogProtector.ignoreExceptionUltimateCauseWithMessageSubstring;
-import static com.aws.greengrass.util.Utils.copyFolderRecursively;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 
 @ExtendWith({MockitoExtension.class, GGExtension.class})
 public class LambdaTransformerIntegTest extends NucleusLaunchUtils {
-    private static String NUCLEUS_VERSION = "2.4.0";
-
-    private Path localStoreContentPath;
+    private Context context;
     @Mock
-    private DeploymentDocumentDownloader deploymentDocumentDownloader;
+    private ComponentStore mockComponentStore;
+
+    @BeforeAll
+    static void beforeAll() throws IOException, URISyntaxException {
+        Path artifactsDir = Paths.get(LambdaTransformerIntegTest.class.getResource("artifacts").toURI());
+        try (Stream<Path> files = Files.walk(artifactsDir)) {
+            for (Path r : files.collect(Collectors.toList())) {
+                if (!r.toFile().isDirectory() && "transformer-integ.jar".equals(r.getFileName().toString())) {
+                    Files.move(r, r.resolveSibling("transformer.jar"), REPLACE_EXISTING);
+                }
+            }
+        }
+    }
 
     @BeforeEach
-    void beforeEach(ExtensionContext context) throws Exception {
-        ignoreExceptionOfType(context, PackageDownloadException.class);
-        ignoreExceptionOfType(context, SdkClientException.class);
-        ignoreExceptionUltimateCauseWithMessageSubstring(context, "Unable to locate the unpack directory of Nucleus artifacts");
+    void beforeEach() {
+        context = new Context();
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        context.put(ExecutorService.class, executorService);
+    }
 
-        kernel = new Kernel();
-        new DeviceConfiguration(kernel, "thing.thingName", "thing.dataEndpoint", "thing.credEndpoint",
-                "privKeyFilePath", "certFilePath", "caFilePath", "awsRegion", "roleAliasName");
-        // Make sure tlog persists the device configuration
-        kernel.getContext().waitForPublishQueueToClear();
-        kernel.getConfig().lookup(SERVICES_NAMESPACE_TOPIC, DEFAULT_NUCLEUS_COMPONENT_NAME,
-                VERSION_CONFIG_KEY).dflt(NUCLEUS_VERSION);
-        kernel.getConfig().lookup(SETENV_CONFIG_NAMESPACE, GGC_VERSION_ENV).dflt(NUCLEUS_VERSION);
-        kernel.getContext().put(DeploymentDocumentDownloader.class, deploymentDocumentDownloader);
-        NoOpPathOwnershipHandler.register(kernel);
-        ConfigPlatformResolver.initKernelWithMultiPlatformConfig(kernel,
-                LambdaTransformerIntegTest.class.getResource("onlyMain.yaml"));
-
-        // ensure deployment service starts
-        CountDownLatch deploymentServiceLatch = new CountDownLatch(1);
-        kernel.getContext().addGlobalStateChangeListener((service, oldState, newState) -> {
-            if (service.getName().equals(DEPLOYMENT_SERVICE_TOPICS) && newState.equals(State.RUNNING)) {
-                deploymentServiceLatch.countDown();
+    @Test
+    void WHEN_lambda_with_minimal_parameter_file_found_THEN_it_is_expanded_with_default_values() throws Exception {
+        doAnswer(i -> {
+            ComponentIdentifier identifier = i.getArgument(0);
+            ComponentIdentifier expectedIdentifier = new ComponentIdentifier("python-listener", new Semver("1.0.0"));
+            assertEquals(expectedIdentifier, identifier);
+            String actualRecipeString = i.getArgument(1);
+            Path expectedFile = Paths.get(getClass().getResource("expected_recipes/minimal_recipe.yaml").toURI());
+            String expectedRecipeString = new String(Files.readAllBytes(expectedFile));
+            if (System.getProperty("os.name").contains("Windows")) {
+                expectedRecipeString = expectedRecipeString.replace("\r\n", "\n");
+                /* This is necessary for Windows line feed compatibility. In particular, this is necessary because of
+                how git deals with line feeds (more accurately, the way git for Windows deals with line feeds). By
+                default, when git for Windows pulls repos, it replaces Unix-style LF line feeds with Windows-style
+                CRLF. But internally, Jackson and/or Java uses LF line feeds, so we need to reconcile these differences.
+                If at any point the default for git for Windows changes, this code will be unnecessary but the build
+                will not break.
+                 */
             }
-        });
-        setDeviceConfig(kernel, DeviceConfiguration.DEPLOYMENT_POLLING_FREQUENCY_SECONDS, 1L);
+            assertEquals(expectedRecipeString, actualRecipeString);
+            return null;
+        }).when(mockComponentStore).savePackageRecipe(any(), any());
 
-        kernel.launch();
-        assertTrue(deploymentServiceLatch.await(10, TimeUnit.SECONDS));
+        Path recipesDirPath = Paths.get(getClass().getResource("minimal_recipes").toURI());
+        Path artifactsDirPath = Paths.get(getClass().getResource("artifacts").toURI());
+        new TemplateEngine(mockComponentStore, null, context).process(recipesDirPath, artifactsDirPath);
+    }
 
-        FleetStatusService fleetStatusService = (FleetStatusService) kernel.locate(FLEET_STATUS_SERVICE_TOPICS);
-        fleetStatusService.getIsConnected().set(false);
-        // pre-load contents to package store
-        localStoreContentPath =
-                Paths.get(LambdaTransformerIntegTest.class.getResource(".").toURI());
-        PreloadComponentStoreHelper.preloadRecipesFromTestResourceDir(localStoreContentPath.resolve(
-                "recipes"),
-                kernel.getNucleusPaths().recipePath());
-        copyFolderRecursively(localStoreContentPath.resolve("artifacts"), kernel.getNucleusPaths().artifactPath(),
-                REPLACE_EXISTING);
-        renameTestTransformerJarsToTransformerJars(localStoreContentPath.resolve("artifacts"));
+    @Test
+    void WHEN_lambda_with_full_parameter_file_found_THEN_expansion_works() throws Exception {
+        doAnswer(i -> {
+            ComponentIdentifier identifier = i.getArgument(0);
+            ComponentIdentifier expectedIdentifier = new ComponentIdentifier("cloud-hello", new Semver("3.2.1"));
+            assertEquals(expectedIdentifier, identifier);String actualRecipeString = i.getArgument(1);
+            Path expectedFile = Paths.get(getClass().getResource("expected_recipes/full_recipe.yaml").toURI());
+            String expectedRecipeString = new String(Files.readAllBytes(expectedFile));
+            if (System.getProperty("os.name").contains("Windows")) {
+                expectedRecipeString = expectedRecipeString.replace("\r\n", "\n");
+            }
+            assertEquals(expectedRecipeString, actualRecipeString);
+            return null;
+        }).when(mockComponentStore).savePackageRecipe(any(), any());
+
+        Path recipesDirPath = Paths.get(getClass().getResource("full_recipes").toURI());
+        Path artifactsDirPath = Paths.get(getClass().getResource("artifacts").toURI());
+        new TemplateEngine(mockComponentStore, null, context).process(recipesDirPath, artifactsDirPath);
+    }
+
+
+    @Test
+    void WHEN_lambda_has_bad_parameter_file_THEN_expansion_throws_an_error() throws URISyntaxException{
+        Path recipesDirPath = Paths.get(getClass().getResource("bad_recipes").toURI());
+        Path artifactsDirPath = Paths.get(getClass().getResource("artifacts").toURI());
+        RecipeTransformerException e = assertThrows(RecipeTransformerException.class,
+                () -> new TemplateEngine(mockComponentStore, null, context).process(recipesDirPath,
+                artifactsDirPath));
+        TemplateParameterException ex = (TemplateParameterException) e.getCause();
+        assertThat(ex.getMessage(), containsString("Provided parameters do not satisfy template schema"));
+        assertThat(ex.getMessage(), containsString("Provided parameter \"lambdaArn\" does not specify required schema"));
+        assertThat(ex.getMessage(), containsString("Provided parameter \"inputPayloadEncodingType\" does not specify required schema"));
     }
 
     @AfterEach
     void after() {
-        if (kernel != null) {
-            kernel.shutdown();
-        }
-    }
-
-    private void renameTestTransformerJarsToTransformerJars(Path artifactsDir) throws IOException {
-        try (Stream<Path> files = Files.walk(artifactsDir)) {
-            for (Path r : files.collect(Collectors.toList())) {
-                if (!r.toFile().isDirectory() && "transformer-packed.jar".equals(r.getFileName().toString())) {
-                    Files.move(r, r.resolveSibling("transformer.jar"), REPLACE_EXISTING);
-                }
-            }
+        if (context != null) {
+            context.shutdown();
         }
     }
 }

@@ -5,6 +5,7 @@
 
 package com.aws.greengrass.lambdatransformer.common.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +18,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ContainerParams {
+    @JsonProperty("memorySize")
     private Integer memorySizeInKB;
     private Boolean mountROSysfs;
     private Map<String, LambdaVolumeMount> volumes;

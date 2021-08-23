@@ -59,7 +59,7 @@ public class Constants {
 
     public static final int LAMBDA_RECIPE_DEFAULT_MAX_INSTANCE_COUNT = 100;
 
-    public static final int LAMBDA_RECIPE_DEFAULT_LAMBDA_MEMORY_IN_KILO_BYTES = 16_384; // 16 MB
+    public static final int LAMBDA_RECIPE_DEFAULT_LAMBDA_MEMORY_IN_KILO_BYTES = 16_000;
 
     public static final boolean LAMBDA_RECIPE_DEFAULT_PINNED = true;
 

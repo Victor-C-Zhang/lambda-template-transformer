@@ -1,0 +1,57 @@
+---
+RecipeFormatVersion: "2020-01-25"
+ComponentName: cloud-hello
+ComponentVersion: 3.2.1
+ComponentType: aws.greengrass.generic
+ComponentDependencies:
+  LambdaTemplate:
+    VersionRequirement: '1.0.0'
+TemplateParameters:
+  lambdaArn: arn:aws:lambda:us-west-2:958094261904:function:cloud-hello:2
+  lambdaHandler: index.handler
+  lambdaRuntime: nodejs12.x
+  pubsubTopics:
+    - topic: topic/lambda
+      type: PUB_SUB
+    - topic: topic/cloud
+      type: IOT_CORE
+  timeoutInSeconds: 5
+  pinned: false
+  maxQueueSize: 10
+  maxInstancesCount: 1000
+  maxIdleTimeInSeconds: 30
+  inputPayloadEncodingType: binary
+  platforms:
+    - os: linux
+      architecture: amd64
+    - os: darwin
+      architecture: amd64
+  componentDependencies:
+    aws.greengrass.Cli:
+      VersionRequirement: '>2.0.0'
+      DependencyType: SOFT
+    aws.greengrass.Nucleus:
+      VersionRequirement: 2.4.0
+      DependencyType: HARD
+  lambdaArgs:
+    - '--arg'
+  lambdaEnvironmentVariables:
+    ENVVAR: ENVVAL
+    ENVVAR1: ENVVAL1
+  containerMode: GreengrassContainer
+  containerParams:
+    memorySize: 4096
+    mountROSysfs: true
+    volumes:
+      - source: /dev/dsk/1
+        destination: /dev/disk/1
+        permission: rw
+        addGroupOwner: false
+      - source: /dev/app
+        destination: /dev/application
+        permission: ro
+        addGroupOwner: true
+    devices:
+      - path: /dev/usb/1
+        permission: ro
+        addGroupOwner: false

@@ -61,6 +61,9 @@ ComponentDependencies:
   aws.greengrass.TokenExchangeService:
     VersionRequirement: ">=2.0.0 <3.0.0"
     DependencyType: "HARD"
+  LambdaTemplate:
+    VersionRequirement: "=1.0.0"
+    DependencyType: "SOFT"
 Manifests:
 - Platform:
     os: "linux"
